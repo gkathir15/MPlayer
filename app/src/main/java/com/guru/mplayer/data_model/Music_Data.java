@@ -1,0 +1,65 @@
+package com.guru.mplayer.data_model;
+
+/**
+ * Created by Guru on 09-03-2018.
+ */
+
+public class Music_Data {
+
+    private String TrackURI,Length,Title,AlbumName;
+
+    public Music_Data(String trackURI, String title, String length, String albumName)
+    {
+
+        this.Title = title;
+        this.TrackURI = trackURI;
+        this.Length = length;
+        this.AlbumName = albumName;
+    }
+
+    public Music_Data() {
+
+    }
+
+    public String getTrackURI() {
+        return TrackURI;
+    }
+
+    public String getLength() {
+        return Length;
+    }
+
+    public String getTitle() {
+        return Title;
+    }
+
+    public String getAlbumName() {
+        return AlbumName;
+    }
+
+    public String toString() {
+        return "Music_Data{" +
+                "TrackURI='" + TrackURI + '\'' +
+                ", Length='" + Length + '\'' +
+                ", Title='" + Title + '\'' +
+                ", AlbumName='" + AlbumName + '\'' +
+                '}';
+    }
+
+    public void setTrackURI(String trackURI) {
+        TrackURI = trackURI;
+    }
+
+    public void setLength(String length) {
+        Length = length;
+    }
+
+    public void setTitle(String title) {
+        Title = title;
+    }
+
+    public void setAlbumName(String albumName) {
+        AlbumName = albumName;
+    }
+
+}
