@@ -6,9 +6,13 @@ package com.guru.mplayer.data_model;
 
 public class Music_Data {
 
-    private String TrackURI,Length,Title,AlbumName;
+    private String TrackURI,Title,AlbumName;
+    int Length;
 
-    public Music_Data(String trackURI, String title, String length, String albumName)
+    public Music_Data(String trackURI,
+                      String title,
+                      int length,
+                      String albumName)
     {
 
         this.Title = title;
@@ -25,7 +29,7 @@ public class Music_Data {
         return TrackURI;
     }
 
-    public String getLength() {
+    public int getLength() {
         return Length;
     }
 
@@ -37,20 +41,11 @@ public class Music_Data {
         return AlbumName;
     }
 
-    public String toString() {
-        return "Music_Data{" +
-                "TrackURI='" + TrackURI + '\'' +
-                ", Length='" + Length + '\'' +
-                ", Title='" + Title + '\'' +
-                ", AlbumName='" + AlbumName + '\'' +
-                '}';
-    }
-
     public void setTrackURI(String trackURI) {
         TrackURI = trackURI;
     }
 
-    public void setLength(String length) {
+    public void setLength(int length) {
         Length = length;
     }
 

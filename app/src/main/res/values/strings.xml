@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MPlayer</string>
+    <string name="todo">TODO</string>
 </resources>
