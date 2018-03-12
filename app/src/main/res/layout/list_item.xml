@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:elevation="5dp"
+    android:layout_margin="4dp"
+    android:background="#fdfdfd"
+    >
 
-    <EditText
+    <TextView
+        android:id="@+id/track_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/track_title"/>
+        android:textSize="15dp"
+        android:padding="4dp"
+        />
 
-    <EditText
+    <TextView
+        android:id="@+id/album_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/album_name" />
+        android:textSize="15dp"
+        android:padding="4dp"/>
 
 
 

@@ -1,6 +1,7 @@
 package com.guru.mplayer.activities;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -11,16 +12,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.guru.mplayer.R;
 import com.guru.mplayer.adapter.SongListAdapter;
 import com.guru.mplayer.data_model.Music_Data;
 import com.guru.mplayer.helper.MediaDataHelper;
+import com.guru.mplayer.interfaces.OnItemClickListener;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnItemClickListener {
 
     MediaDataHelper mediaDataHelper = new MediaDataHelper();
     public static int READ_PERMISSION = 5;
@@ -29,21 +32,25 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView songsRecyclerView;
     private ArrayList<Music_Data> songsList = new ArrayList();
     SongListAdapter songListAdapter;
+    Music_Data music_data = new Music_Data();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (isReadStoragePermissionGranted()) {
-            queryMusicData.execute();
-        } else {
-            Toast.makeText(this, "Cannot proceed without permissions", Toast.LENGTH_LONG).show();
-        }
+        isReadStoragePermissionGranted();
+        queryMusicData.execute();
+//        if (!isReadStoragePermissionGranted()) {
+//            queryMusicData.execute();
+//        } else {
+//            Toast.makeText(this, "Cannot proceed without permissions", Toast.LENGTH_LONG).show();
+//        }
 
-         songListAdapter = new SongListAdapter(R.layout.list_item,songsList);
         songsRecyclerView = findViewById(R.id.tracks_recycler_view);
         songsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        songListAdapter = new SongListAdapter(R.layout.list_item,songsList);
         songsRecyclerView.setAdapter(songListAdapter);
+        songListAdapter.setClickListener((OnItemClickListener) this);
 
 
     }
@@ -62,6 +69,15 @@ public class MainActivity extends AppCompatActivity {
         isReadStoragePermissionGranted();
 
 
+    }
+
+    @Override
+    public void onClick(View View, int Position) {
+        Toast.makeText(this,"from recycler View"+Position,Toast.LENGTH_LONG).show();
+        Intent i = new Intent(this,PlayerActivity.class);
+        i.putExtra("songsList",songsList);
+        i.putExtra("position",Position);
+        startActivity(i);
     }
 
     public class QueryMusicData extends AsyncTask<Void, Void, ArrayList<Music_Data>> {
@@ -101,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "Permission is granted");
+                Log.d(TAG, "Permission is already present");
                 return true;
             } else {
 
@@ -110,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         } else { //permission for lower API devices,granted from manifest
-            Log.d(TAG, "Permission is granted");
+            Log.d(TAG, "Permission is granted Lower API");
             return true;
         }
     }

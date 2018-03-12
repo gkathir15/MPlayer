@@ -1,12 +1,10 @@
 package com.guru.mplayer.helper;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.MediaStore;
 import android.util.Log;
 
-import com.guru.mplayer.constants.Constants;
 import com.guru.mplayer.data_model.Music_Data;
 
 import java.util.ArrayList;
@@ -20,15 +18,13 @@ public class MediaDataHelper {
     Cursor mCursor;
 
 
-    Music_Data musicData = new Music_Data();
+    //Music_Data musicData = new Music_Data();
 
 
 
 
     public ArrayList<Music_Data> queryMediaMeta(Context context)
     {
-        //CursorLoader lCursorLoader = new CursorLoader(context, Constants.MEDIA_AUDIO_URI,Constants.AUDIO_PROJECTION_META,null,null,null);
-       // ContentResolver contentResolver = context.getContentResolver();
          mCursor = context.getContentResolver().query( MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,new String[] {
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
@@ -48,15 +44,17 @@ public class MediaDataHelper {
                    do {
 
 
-                       new Music_Data(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media._ID))
+                     Music_Data music_data =  new Music_Data(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media._ID))
                                , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.TITLE))
                                , mCursor.getInt(mCursor.getColumnIndex(MediaStore.Audio.Media.DURATION))
                                , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
-                       TracksList.add(musicData);
-                       Log.d(musicData.getTitle(), "music");
+                       Log.d("music cursor",mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
+                       TracksList.add(music_data);
+
 
 
                    } while (mCursor.moveToNext());
+
                }
 
                else{
@@ -75,7 +73,6 @@ public class MediaDataHelper {
     }
 
 
-    //public void
 
 
 }

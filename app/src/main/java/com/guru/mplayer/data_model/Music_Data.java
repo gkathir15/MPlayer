@@ -1,10 +1,12 @@
 package com.guru.mplayer.data_model;
 
+import java.io.Serializable;
+
 /**
  * Created by Guru on 09-03-2018.
  */
 
-public class Music_Data {
+public class Music_Data implements Serializable {
 
     private String TrackURI,Title,AlbumName;
     int Length;
