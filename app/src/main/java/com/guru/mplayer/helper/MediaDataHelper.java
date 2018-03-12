@@ -25,7 +25,7 @@ public class MediaDataHelper {
 
 
 
-    public void queryMediaMeta(Context context)
+    public ArrayList<Music_Data> queryMediaMeta(Context context)
     {
         //CursorLoader lCursorLoader = new CursorLoader(context, Constants.MEDIA_AUDIO_URI,Constants.AUDIO_PROJECTION_META,null,null,null);
        // ContentResolver contentResolver = context.getContentResolver();
@@ -71,7 +71,7 @@ public class MediaDataHelper {
 
         }
 
-
+        return  TracksList;
     }
 
 
