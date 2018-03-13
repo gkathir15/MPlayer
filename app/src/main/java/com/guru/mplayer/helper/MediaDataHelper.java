@@ -18,6 +18,15 @@ public class MediaDataHelper {
     Cursor mCursor;
 
 
+//    public float msToSec(int milliSec)
+//    {
+//        float duration;
+//
+//
+//        return duration
+//    }
+
+
     //Music_Data musicData = new Music_Data();
 
 
@@ -47,8 +56,9 @@ public class MediaDataHelper {
                      Music_Data music_data =  new Music_Data(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media._ID))
                                , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.TITLE))
                                , mCursor.getInt(mCursor.getColumnIndex(MediaStore.Audio.Media.DURATION))
-                               , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
-                       Log.d("music cursor",mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
+                             , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
+
+                       Log.d("music cursor",mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media._ID)));
                        TracksList.add(music_data);
 
 
