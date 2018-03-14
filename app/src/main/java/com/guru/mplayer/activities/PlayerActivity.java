@@ -68,46 +68,59 @@ public class PlayerActivity extends AppCompatActivity {
         rotation = AnimationUtils.loadAnimation(this, R.anim.spin);
         Intent i = getIntent();
         mMusicList = (ArrayList<Music_Data>) i.getSerializableExtra("songsList");
-        mSelectedPosition = i.getIntExtra("position",0);
-        Log.d(TAG,"passed value"+mSelectedPosition);
-        Log.d(TAG,mMusicList.get(mSelectedPosition).getTitle());
+        mSelectedPosition = i.getIntExtra("position", 0);
+        Log.d(TAG, "passed value" + mSelectedPosition);
+        Log.d(TAG, mMusicList.get(mSelectedPosition).getTitle());
         mTitle.setText(mMusicList.get(mSelectedPosition).getTitle());
         Log.d(TAG, String.valueOf(mMusicList.get(mSelectedPosition).getLength()));
         mDuration.setText(String.valueOf(mMsToSec(mMusicList.get(mSelectedPosition).getLength())));
         mAlbum.setText(mMusicList.get(mSelectedPosition).getAlbumName());
         spinCD(true);
-         playIntent = new Intent(this, MusicService.class);
-        playIntent.putExtra("songsList",mMusicList);
-        playIntent.putExtra("position",mSelectedPosition);
-        bindService(playIntent,mserviceConnection, Context.BIND_AUTO_CREATE);
+        playIntent = new Intent(this, MusicService.class);
+        playIntent.putExtra("songsList", mMusicList);
+        playIntent.putExtra("position", mSelectedPosition);
+        bindService(playIntent, mserviceConnection, Context.BIND_AUTO_CREATE);
         startService(playIntent);
 
 
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG,"onclick pause");
+                Log.d(TAG, "onclick pause");
                 pauseplay();
             }
         });
 
-//        prev.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                playPrev();
-//            }
-//        });
-//
-//        play.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                playNext();
-//            }
-//        });
+        prev.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playPrev();
+            }
+        });
 
+        next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playNext();
 
+            }
+        });
+    }
+
+    public void setMetaDataOnUI()
+    {
+        int lPosition = musicService.position;
+        mTitle.setText(mMusicList.get(lPosition).getTitle());
+        Log.d(TAG, String.valueOf(mMusicList.get(lPosition).getLength()));
+        mDuration.setText(String.valueOf(mMsToSec(mMusicList.get(lPosition).getLength())));
+        mAlbum.setText(mMusicList.get(lPosition).getAlbumName());
+        //mElapsed
 
     }
+
+
+
+
 
 
 
@@ -142,26 +155,36 @@ public class PlayerActivity extends AppCompatActivity {
         Log.d(TAG,"pause play method");
        if(musicService.IS_PLAYING )
         {
+            spinCD(false);
             musicService.pause();
          play.setImageDrawable(getDrawable(R.drawable.play));
-         spinCD(false);
+
         }
         else
             if (!musicService.IS_PLAYING){
+                spinCD(true);
            play.setImageDrawable(getDrawable(R.drawable.pause));
             musicService.playOnPause();
-            spinCD(true);}
+            }
 
 
     }
 
     public void playNext()
     {
+        spinCD(false);
+        musicService.playNext();
+        setMetaDataOnUI();
+        spinCD(true);
 
     }
 
     public void playPrev()
     {
+        spinCD(false);
+        musicService.playPrev();
+        setMetaDataOnUI();
+        spinCD(true);
 
     }
 

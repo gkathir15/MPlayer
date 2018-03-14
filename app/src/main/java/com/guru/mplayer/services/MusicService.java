@@ -22,11 +22,12 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     String mediaID;
     String TAG = "musicService";
     int resumePos;
-    int position;
+    public int position;
     String getMediaID;
     ArrayList<Music_Data> musicList = new ArrayList<>();
     public boolean IS_PLAYING = false;
     int mCurrentDuration;
+    int mSongsListSize;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -35,6 +36,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         position = intent.getIntExtra("position", 0);
         musicList = (ArrayList<Music_Data>) intent.getSerializableExtra("songsList");
         mediaID = musicList.get(position).getId();
+        mSongsListSize = musicList.size();
         Log.d(TAG, mediaID);
         initMediaPlayer();
 
@@ -109,7 +111,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
             Log.d(TAG, mediaID);
             mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
                     android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    Long.parseLong(mediaID)));
+                    Long.parseLong(musicList.get(position).getId())));
 
         } catch (IOException e) {
             Log.d(TAG, "Crashed while Setting uri");
@@ -130,6 +132,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public void playFromDuration(int duration)
     {
+
         mediaPlayer.reset();
         try {
             Log.d(TAG, mediaID);
@@ -151,9 +154,82 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
                         mediaPlayer.start();
                     }
                 });
-                Log.d(TAG, String.valueOf(mCurrentDuration*1000));
                 Log.d(TAG, String.valueOf(mCurrentDuration));
                // mediaPlayer.start();
+                IS_PLAYING=true;
+            }
+        });
+
+    }
+
+    public void playNext()
+    {
+        if (position == mSongsListSize)
+        {
+            position = 0;
+        }
+        else
+            position = position+1;
+
+
+        mediaID = musicList.get(position).getId();
+        mediaPlayer.reset();
+        try {
+            Log.d(TAG, mediaID);
+            mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    Long.parseLong(mediaID)));
+
+        } catch (IOException e) {
+            Log.d(TAG, "Crashed while Setting uri");
+        }
+        mediaPlayer.prepareAsync();
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+
+                mediaPlayer.start();
+
+                // mediaPlayer.start();
+                IS_PLAYING=true;
+            }
+        });
+
+    }
+
+    public void playPrev()
+    {
+
+        Log.d("position", String.valueOf(position));
+        Log.d("size of list", String.valueOf(mSongsListSize));
+
+        if (position == 0)
+        {
+            position = mSongsListSize-1;
+        }
+        else
+            position = position-1;
+
+
+        mediaID = musicList.get(position).getId();
+        mediaPlayer.reset();
+        try {
+            Log.d(TAG, mediaID);
+            mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    Long.parseLong(mediaID)));
+
+        } catch (IOException e) {
+            Log.d(TAG, "Crashed while Setting uri");
+        }
+        mediaPlayer.prepareAsync();
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+
+                mediaPlayer.start();
+
+                // mediaPlayer.start();
                 IS_PLAYING=true;
             }
         });
