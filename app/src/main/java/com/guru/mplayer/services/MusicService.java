@@ -60,6 +60,9 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     @Override
     public void onCompletion(MediaPlayer mp) {
 
+       Log.d(TAG,"Current song completed");
+        playNext();
+
     }
 
     @Override
@@ -95,7 +98,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 //                        }
 //                    }
 //            );
-            playFromDuration(mCurrentDuration);
+            playOnPauseFromDuration(mCurrentDuration);
         }
     }
 
@@ -130,7 +133,46 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         //mediaPlayer.start();
     }
 
-    public void playFromDuration(int duration)
+    public void seekToDuration(final int duration)
+    {
+
+        mediaPlayer.reset();
+        try {
+            Log.d(TAG, mediaID);
+            mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    Long.parseLong(mediaID)));
+
+        } catch (IOException e) {
+            Log.d(TAG, "Crashed while Setting uri");
+        }
+
+
+
+        mediaPlayer.prepareAsync();
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mediaPlayer.seekTo(duration);
+
+
+                Log.d("seekduration", String.valueOf(duration));
+//                mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+//                    @Override
+//                    public void onSeekComplete(MediaPlayer mp) {
+//                        mediaPlayer.start();
+//                    }
+//                });
+                mediaPlayer.start();
+
+                // mediaPlayer.start();
+                IS_PLAYING=true;
+            }
+        });
+
+    }
+
+    public void playOnPauseFromDuration(final int duration)
     {
 
         mediaPlayer.reset();
@@ -147,29 +189,32 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
-                mediaPlayer.seekTo(mCurrentDuration);
-                mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-                    @Override
-                    public void onSeekComplete(MediaPlayer mp) {
-                        mediaPlayer.start();
-                    }
-                });
-                Log.d(TAG, String.valueOf(mCurrentDuration));
-               // mediaPlayer.start();
+                mediaPlayer.seekTo(duration);
+//                mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+//                    @Override
+//                    public void onSeekComplete(MediaPlayer mp) {
+//                        mediaPlayer.start();
+//                    }
+//                });
+                mediaPlayer.start();
+                Log.d(TAG, String.valueOf(duration));
+                // mediaPlayer.start();
                 IS_PLAYING=true;
             }
         });
 
     }
 
+
     public void playNext()
     {
-        if (position == mSongsListSize)
+        if (position == mSongsListSize-1)
         {
             position = 0;
         }
-        else
-            position = position+1;
+        else {
+            position = position + 1;
+        }
 
 
         mediaID = musicList.get(position).getId();
@@ -250,6 +295,18 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         mediaPlayer = null;
     }
 
+    public int getElapsedTime()
+    {
+       return mediaPlayer.getCurrentPosition();
+    }
+
+    public int getSongDuration()
+    {
+        return  mediaPlayer.getDuration();
+
+    }
+
+
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
@@ -263,4 +320,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
         return super.onUnbind(intent);
     }
+
+
+
 }

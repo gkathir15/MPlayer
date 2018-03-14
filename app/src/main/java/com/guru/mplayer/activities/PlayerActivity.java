@@ -4,7 +4,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.drawable.Drawable;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -75,12 +74,15 @@ public class PlayerActivity extends AppCompatActivity {
         Log.d(TAG, String.valueOf(mMusicList.get(mSelectedPosition).getLength()));
         mDuration.setText(String.valueOf(mMsToSec(mMusicList.get(mSelectedPosition).getLength())));
         mAlbum.setText(mMusicList.get(mSelectedPosition).getAlbumName());
+
         spinCD(true);
         playIntent = new Intent(this, MusicService.class);
         playIntent.putExtra("songsList", mMusicList);
         playIntent.putExtra("position", mSelectedPosition);
         bindService(playIntent, mserviceConnection, Context.BIND_AUTO_CREATE);
         startService(playIntent);
+        //setMetaDataOnUI();
+
 
 
         play.setOnClickListener(new View.OnClickListener() {
@@ -105,6 +107,35 @@ public class PlayerActivity extends AppCompatActivity {
 
             }
         });
+
+
+
+        mMusicSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            seekBar.setProgress(progress);
+            seekTo(progress*musicService.getSongDuration()/100);
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+//        while(musicService.IS_PLAYING){
+//            mMusicSeek.setProgress(musicService.getElapsedTime());}
+
+
+
+
+
     }
 
     public void setMetaDataOnUI()
@@ -114,7 +145,11 @@ public class PlayerActivity extends AppCompatActivity {
         Log.d(TAG, String.valueOf(mMusicList.get(lPosition).getLength()));
         mDuration.setText(String.valueOf(mMsToSec(mMusicList.get(lPosition).getLength())));
         mAlbum.setText(mMusicList.get(lPosition).getAlbumName());
-        //mElapsed
+//        while(musicService.IS_PLAYING)
+//        {
+//            Log.d("elapsed time", String.valueOf(musicService.getElapsedTime()));
+//            mElapsed.setText(musicService.getElapsedTime());
+//        }
 
     }
 
@@ -186,10 +221,15 @@ public class PlayerActivity extends AppCompatActivity {
         setMetaDataOnUI();
         spinCD(true);
 
+
     }
 
-    public void seekTo()
+
+
+
+    public void seekTo(int duration)
     {
+        musicService.seekToDuration(duration);
 
     }
 
@@ -201,5 +241,9 @@ public class PlayerActivity extends AppCompatActivity {
         finish();
         musicService.onUnbind(playIntent);
     }
+
+
+
+
 
 }
