@@ -86,9 +86,25 @@ public class PlayerActivity extends AppCompatActivity {
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG,"onclick pause");
                 pauseplay();
             }
         });
+
+//        prev.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                playPrev();
+//            }
+//        });
+//
+//        play.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                playNext();
+//            }
+//        });
+
 
 
     }
@@ -123,12 +139,34 @@ public class PlayerActivity extends AppCompatActivity {
 
     public void pauseplay()
     {
-       if( musicService.pause())
+        Log.d(TAG,"pause play method");
+       if(musicService.IS_PLAYING )
         {
+            musicService.pause();
          play.setImageDrawable(getDrawable(R.drawable.play));
-        }else
+         spinCD(false);
+        }
+        else
+            if (!musicService.IS_PLAYING){
            play.setImageDrawable(getDrawable(R.drawable.pause));
+            musicService.playOnPause();
+            spinCD(true);}
 
+
+    }
+
+    public void playNext()
+    {
+
+    }
+
+    public void playPrev()
+    {
+
+    }
+
+    public void seekTo()
+    {
 
     }
 
@@ -136,6 +174,9 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        musicService.onDestroy();
+        finish();
+        musicService.onUnbind(playIntent);
     }
 
 }

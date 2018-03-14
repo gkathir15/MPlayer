@@ -13,7 +13,7 @@ import com.guru.mplayer.data_model.Music_Data;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class MusicService extends Service implements MediaPlayer.OnCompletionListener,MediaPlayer.OnErrorListener,MediaPlayer.OnPreparedListener {
+public class MusicService extends Service implements MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnPreparedListener {
     public MusicService() {
     }
 
@@ -25,15 +25,17 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     int position;
     String getMediaID;
     ArrayList<Music_Data> musicList = new ArrayList<>();
+    public boolean IS_PLAYING = false;
+    int mCurrentDuration;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Log.d(TAG,"onStartCommand");
-        position=  intent.getIntExtra("position",0);
+        Log.d(TAG, "onStartCommand");
+        position = intent.getIntExtra("position", 0);
         musicList = (ArrayList<Music_Data>) intent.getSerializableExtra("songsList");
         mediaID = musicList.get(position).getId();
-        Log.d(TAG,mediaID);
+        Log.d(TAG, mediaID);
         initMediaPlayer();
 
         return super.onStartCommand(intent, flags, startId);
@@ -49,7 +51,6 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     @Override
     public void onCreate() {
         super.onCreate();
-
 
 
     }
@@ -70,40 +71,56 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     }
 
-    public boolean pause()
-    {
-        if(mediaPlayer.isPlaying())
-        {
+    public void pause() {
+        if (IS_PLAYING) {
+           mCurrentDuration = mediaPlayer.getCurrentPosition();
             mediaPlayer.pause();
-            return  true;
+
+            IS_PLAYING =false;
+            mediaPlayer.reset();
+             }
+    }
+
+    public void playOnPause() {
+        if (!IS_PLAYING) {
+//              mediaPlayer.prepareAsync();
+//            mediaPlayer.setOnPreparedListener(
+//                    new MediaPlayer.OnPreparedListener() {
+//                        @Override
+//                        public void onPrepared(MediaPlayer mp) {
+//                            mp.start();
+//
+//                        }
+//                    }
+//            );
+            playFromDuration(mCurrentDuration);
         }
-        return false;
     }
 
 
-
-    public void initMediaPlayer()
-    {
-        Log.d(TAG,"Initmedia");
+    public void initMediaPlayer() {
+        Log.d(TAG, "Initmedia");
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setOnCompletionListener(this);
         mediaPlayer.setOnErrorListener(this);
         mediaPlayer.setOnPreparedListener(this);
         mediaPlayer.reset();
         try {
-            Log.d(TAG,mediaID);
+            Log.d(TAG, mediaID);
             mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
                     android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     Long.parseLong(mediaID)));
 
         } catch (IOException e) {
-            Log.d(TAG,"Crashed while Setting uri");
+            Log.d(TAG, "Crashed while Setting uri");
         }
         mediaPlayer.prepareAsync();
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                                               @Override
                                               public void onPrepared(MediaPlayer mp) {
-                                                  mp.start();
+                                                 // mp.start();
+                                                  mediaPlayer.start();
+                                                  IS_PLAYING =true;
 
                                               }
                                           }
@@ -111,11 +128,41 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         //mediaPlayer.start();
     }
 
+    public void playFromDuration(int duration)
+    {
+        mediaPlayer.reset();
+        try {
+            Log.d(TAG, mediaID);
+            mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    Long.parseLong(mediaID)));
+
+        } catch (IOException e) {
+            Log.d(TAG, "Crashed while Setting uri");
+        }
+        mediaPlayer.prepareAsync();
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mediaPlayer.seekTo(mCurrentDuration);
+                mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                    @Override
+                    public void onSeekComplete(MediaPlayer mp) {
+                        mediaPlayer.start();
+                    }
+                });
+                Log.d(TAG, String.valueOf(mCurrentDuration*1000));
+                Log.d(TAG, String.valueOf(mCurrentDuration));
+               // mediaPlayer.start();
+                IS_PLAYING=true;
+            }
+        });
+
+    }
 
 
     public class LocalBinder extends Binder {
-        public MusicService getService()
-        {
+        public MusicService getService() {
             return MusicService.this;
         }
     }
@@ -123,6 +170,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mediaPlayer.release();
+        mediaPlayer = null;
     }
 
 
