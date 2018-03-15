@@ -2,26 +2,43 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:elevation="5dp"
     android:layout_margin="4dp"
     android:background="#fdfdfd"
-    >
+    android:layout_weight="5"
+    android:padding="10dp">
 
-    <TextView
-        android:id="@+id/track_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="15dp"
-        android:padding="4dp"
-        />
+
+    <ImageView
+        android:id="@+id/thumbs"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_weight="4"
+        android:src="@drawable/ic_vinyl" />
 
     <TextView
         android:id="@+id/album_name"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="15dp"
-        android:padding="4dp"/>
+        android:padding="4dp"
+        android:layout_weight=".5"
+        tools:text="Billboard hits 2018"
+        android:maxLines="1"
+        android:ellipsize="end"/>
+    <TextView
+        android:id="@+id/track_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15dp"
+        android:padding="4dp"
+        android:layout_weight=".5"
+        tools:text="Best of 2018"
+        android:maxLines="1"
+        android:ellipsize="end"
+        />
 
 
 

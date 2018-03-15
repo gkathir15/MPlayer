@@ -81,7 +81,10 @@ public class PlayerActivity extends AppCompatActivity {
         playIntent.putExtra("position", mSelectedPosition);
         bindService(playIntent, mserviceConnection, Context.BIND_AUTO_CREATE);
         startService(playIntent);
+        //updateElapsedTime();
+
         //setMetaDataOnUI();
+
 
 
 
@@ -90,6 +93,7 @@ public class PlayerActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, "onclick pause");
                 pauseplay();
+               // updateElapsedTime();
             }
         });
 
@@ -97,6 +101,7 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 playPrev();
+                //updateElapsedTime();
             }
         });
 
@@ -104,17 +109,28 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 playNext();
+               // updateElapsedTime();
 
             }
         });
 
 
 
+
+
+
         mMusicSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+
+
+
             seekBar.setProgress(progress);
             seekTo(progress*musicService.getSongDuration()/100);
+
+
+
 
             }
 
@@ -125,12 +141,15 @@ public class PlayerActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+//                while(musicService.IS_PLAYING)
+//                {
+//                    mMusicSeek.setProgress((musicService.getElapsedTime()/musicService.getSongDuration())/100);
+//                }
 
             }
         });
 
-//        while(musicService.IS_PLAYING){
-//            mMusicSeek.setProgress(musicService.getElapsedTime());}
+
 
 
 
@@ -240,6 +259,12 @@ public class PlayerActivity extends AppCompatActivity {
         musicService.onDestroy();
         finish();
         musicService.onUnbind(playIntent);
+    }
+
+    void updateElapsedTime()
+    {
+        while(musicService.IS_PLAYING){
+            mElapsed.setText(musicService.getElapsedTime());}
     }
 
 

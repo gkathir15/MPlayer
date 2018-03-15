@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -47,10 +48,10 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 //        }
 
         songsRecyclerView = findViewById(R.id.tracks_recycler_view);
-        songsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        songsRecyclerView.setLayoutManager(new GridLayoutManager(this,2));
         songListAdapter = new SongListAdapter(R.layout.list_item,songsList);
         songsRecyclerView.setAdapter(songListAdapter);
-        songListAdapter.setClickListener((OnItemClickListener) this);
+        songListAdapter.setClickListener(this);
 
 
     }

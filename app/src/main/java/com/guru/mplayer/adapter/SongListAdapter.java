@@ -53,9 +53,9 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         Music_Data music_data = music_Data_List.get(position);
         TextView mTitle = holder.title;
         TextView mAlbum = holder.album;
-        mTitle.setText("Title: "+music_data.getTitle());
-        mAlbum.setText("Album: "+music_data.getAlbumName());
-        Log.d("Adapter","Onbinf view holder called");
+        mTitle.setText(music_data.getTitle());
+        mAlbum.setText(music_data.getAlbumName());
+        Log.d("Adapter","On bind view holder called");
 
 
     }

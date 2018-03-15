@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class MediaDataHelper {
 
-    Cursor mCursor;
+    Cursor mCursor,mAlbumCursor;
 
 
 //    public float msToSec(int milliSec)
@@ -41,6 +41,9 @@ public class MediaDataHelper {
             MediaStore.Audio.Media.ALBUM
     },null,null,null);
 
+         mAlbumCursor = context.getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,new String[]{MediaStore.Audio.Albums.ALBUM_ART},null,null,null);
+
+
         ArrayList<Music_Data> TracksList = new ArrayList<>();
         Log.d("track list Size", String.valueOf(TracksList.size()));
 
@@ -49,21 +52,30 @@ public class MediaDataHelper {
                if(mCursor.moveToFirst()) {
                    Log.d("cursorfirst", "moveto first");
 
-                   // Music Data constructor Signature  Music_Data(String trackURI, String title, String length, String albumName)
+                   mAlbumCursor.moveToNext();
+
+                   // public Music_Data(String id,int length, String title, String albumName, String albumArt)
                    do {
 
 
                      Music_Data music_data =  new Music_Data(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media._ID))
                                , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.TITLE))
                                , mCursor.getInt(mCursor.getColumnIndex(MediaStore.Audio.Media.DURATION))
-                             , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
+                             , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)),
+                            null);
+//
+//                     music_data.setAlbumArt(mAlbumCursor.getString(mAlbumCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART)));
+                    // Log.d("albumArt",music_data.getAlbumArt());
 
                        Log.d("music cursor",mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media._ID)));
                        TracksList.add(music_data);
 
+                       mAlbumCursor.moveToNext();
+
 
 
                    } while (mCursor.moveToNext());
+
 
                }
 
@@ -76,6 +88,7 @@ public class MediaDataHelper {
 
 
             mCursor.close();
+            mAlbumCursor.close();
 
         }
 

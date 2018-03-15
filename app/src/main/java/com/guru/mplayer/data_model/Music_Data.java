@@ -10,21 +10,43 @@ import java.io.Serializable;
 
 public class Music_Data implements Serializable {
 
-    private String Id,Title,AlbumName;
+    private String Id,Title,AlbumName,AlbumArt;
+
+    public Music_Data() {
+
+    }
+
+    public String getAlbumArt() {
+        return AlbumArt;
+    }
+
+    public void setAlbumArt(String albumArt) {
+        AlbumArt = albumArt;
+    }
+
+    public Music_Data(String id, String title,int length, String albumName, String albumArt) {
+        Id = id;
+        Title = title;
+        AlbumName = albumName;
+        AlbumArt = albumArt;
+        Length = length;
+        AlbumArt =albumArt;
+    }
+
     int Length;
     String TrackUri;
 
-    public Music_Data(String id,
-                      String title,
-                      int length,
-                      String albumName)
-    {
-
-        this.Title = title;
-        this.Id = id;
-        this.Length = length;
-        this.AlbumName = albumName;
-    }
+//    public Music_Data(String id,
+//                      String title,
+//                      int length,
+//                      String albumName)
+//    {
+//
+//        this.Title = title;
+//        this.Id = id;
+//        this.Length = length;
+//        this.AlbumName = albumName;
+//    }
 
     public String getTrackUri() {
         return TrackUri;
@@ -34,9 +56,9 @@ public class Music_Data implements Serializable {
         TrackUri = trackUri;
     }
 
-    public Music_Data() {
-
-    }
+//    public Music_Data(String string, String mCursorString, int anInt, String albumArt, String s) {
+//
+//    }
 
     public String getId() {
         return Id;
