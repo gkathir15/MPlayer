@@ -18,9 +18,11 @@ import android.widget.Toast;
 
 import com.guru.mplayer.R;
 import com.guru.mplayer.adapter.SongListAdapter;
+import com.guru.mplayer.data_model.AlbumData;
 import com.guru.mplayer.data_model.Music_Data;
 import com.guru.mplayer.helper.MediaDataHelper;
 import com.guru.mplayer.interfaces.OnItemClickListener;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
     private ArrayList<Music_Data> songsList = new ArrayList();
     SongListAdapter songListAdapter;
     Music_Data music_data = new Music_Data();
+    ArrayList<AlbumData> mAlbumList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,8 +51,8 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 //        }
 
         songsRecyclerView = findViewById(R.id.tracks_recycler_view);
-        songsRecyclerView.setLayoutManager(new GridLayoutManager(this,2));
-        songListAdapter = new SongListAdapter(R.layout.list_item,songsList);
+        songsRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        songListAdapter = new SongListAdapter(R.layout.list_item, songsList, mAlbumList);
         songsRecyclerView.setAdapter(songListAdapter);
         songListAdapter.setClickListener(this);
 
@@ -74,10 +77,11 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
     @Override
     public void onClick(View View, int Position) {
-        Toast.makeText(this,"from recycler View"+Position,Toast.LENGTH_LONG).show();
-        Intent i = new Intent(this,PlayerActivity.class);
-        i.putExtra("songsList",songsList);
-        i.putExtra("position",Position);
+        Toast.makeText(this, "from recycler View" + Position, Toast.LENGTH_LONG).show();
+        Intent i = new Intent(this, PlayerActivity.class);
+        i.putExtra("songsList", songsList);
+        i.putExtra("position", Position);
+        i.putExtra("albumList",mAlbumList);
         startActivity(i);
     }
 
@@ -94,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
             songsList.addAll(tempList);
             songListAdapter.notifyDataSetChanged();
-            Log.d(TAG+"OnPost", String.valueOf(songsList.size()));
+            Log.d(TAG + "OnPost", String.valueOf(songsList.size()));
 
 
         }
@@ -103,7 +107,8 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         protected ArrayList<Music_Data> doInBackground(Void... voids) {
 
             ArrayList<Music_Data> lArrayList;
-           lArrayList =  mediaDataHelper.queryMediaMeta(getApplicationContext());
+            lArrayList = mediaDataHelper.queryMediaMeta(MainActivity.this);
+            mAlbumList.addAll(mediaDataHelper.QureryAlbum(MainActivity.this));
 
 
             return lArrayList;
@@ -131,5 +136,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
             return true;
         }
     }
+
+
 
 }

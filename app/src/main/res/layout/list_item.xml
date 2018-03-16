@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:layout_weight="4"
-        android:src="@drawable/ic_vinyl" />
+        tools:src="@drawable/ic_vinyl" />
 
     <TextView
         android:id="@+id/album_name"

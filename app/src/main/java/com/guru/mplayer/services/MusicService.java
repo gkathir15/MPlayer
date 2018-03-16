@@ -1,13 +1,16 @@
 package com.guru.mplayer.services;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.guru.mplayer.R;
 import com.guru.mplayer.data_model.Music_Data;
 
 import java.io.IOException;
@@ -25,9 +28,11 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     public int position;
     String getMediaID;
     ArrayList<Music_Data> musicList = new ArrayList<>();
-    public boolean IS_PLAYING = false;
+    public static boolean IS_PLAYING = false;
     int mCurrentDuration;
     int mSongsListSize;
+    boolean IS_PREPARED = false;
+    int id = 5;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -40,7 +45,9 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         Log.d(TAG, mediaID);
         initMediaPlayer();
 
-        return super.onStartCommand(intent, flags, startId);
+
+      // return super.onStartCommand(intent, flags, startId);
+        return Service.START_NOT_STICKY;
 
     }
 
@@ -55,23 +62,31 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         super.onCreate();
 
 
+
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
 
        Log.d(TAG,"Current song completed");
+       IS_PLAYING =false;
         playNext();
 
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
+
+        mediaPlayer.reset();
         return false;
     }
 
     @Override
     public void onPrepared(MediaPlayer mp) {
+
+        IS_PREPARED =true;
+
+
 
 
     }
@@ -88,16 +103,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public void playOnPause() {
         if (!IS_PLAYING) {
-//              mediaPlayer.prepareAsync();
-//            mediaPlayer.setOnPreparedListener(
-//                    new MediaPlayer.OnPreparedListener() {
-//                        @Override
-//                        public void onPrepared(MediaPlayer mp) {
-//                            mp.start();
 //
-//                        }
-//                    }
-//            );
             playOnPauseFromDuration(mCurrentDuration);
         }
     }
@@ -297,7 +303,9 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public int getElapsedTime()
     {
+        Log.d("currpos", String.valueOf(mediaPlayer.getCurrentPosition()));
        return mediaPlayer.getCurrentPosition();
+
     }
 
     public int getSongDuration()
@@ -319,6 +327,17 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 //        mediaPlayer.release();
 
         return super.onUnbind(intent);
+    }
+
+    private void setNotification() {
+        NotificationCompat.Builder notificationCompat = new NotificationCompat.Builder(this, getPackageName())
+                .setContentText("Music servioce")
+                .setContentTitle("Music Service")
+                .setSmallIcon(R.drawable.ic_acoustic_guitar)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
+
+
     }
 
 
