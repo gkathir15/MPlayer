@@ -1,5 +1,6 @@
 package com.guru.mplayer.adapter;
 
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.net.Uri;
@@ -43,7 +44,6 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         mAlbumList = lAlbumlist;
 
 
-
     }
 
     @Override
@@ -51,9 +51,9 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
         Context mContext = parent.getContext();
         LayoutInflater layoutInflater = LayoutInflater.from(mContext);
-         View SongsListView = layoutInflater.inflate(itemList,parent,false);
+        View SongsListView = layoutInflater.inflate(itemList, parent, false);
 
-         ViewHolder viewHolder = new ViewHolder(SongsListView);
+        ViewHolder viewHolder = new ViewHolder(SongsListView);
 
 
         return viewHolder;
@@ -63,46 +63,30 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
     public void onBindViewHolder(SongListAdapter.ViewHolder holder, int position) {
 
 
-
         Music_Data music_data = music_Data_List.get(position);
         TextView mTitle = holder.title;
         TextView mAlbum = holder.album;
         ImageView lThumbArt = holder.lThumbsArt;
         mTitle.setText(music_data.getTitle());
         mAlbum.setText(music_data.getAlbumName());
-
-
-
-        for(AlbumData temp : mAlbumList) {
-            if (music_Data_List.get(position).getAlbumName().equals(temp.getAlbumNAme())) {
-
-                Log.d("albums",temp.getAlbumNAme());
-
-                Picasso.get().load("file://"+temp.getAlbumArt())
-                        .placeholder(R.drawable.ic_vinyl)
-                        .error(R.drawable.ic_vinyl).
-                        into(lThumbArt);
-
-
-
-            } else {
-
-                Picasso.get().load(R.drawable.ic_vinyl).into(lThumbArt);
-
-            }
-        }
+        Picasso.get().load(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"),
+                Long.parseLong(music_Data_List.get(position).getAlbumID())))
+                .placeholder(R.drawable.ic_vinyl)
+                .error(R.drawable.ic_vinyl)
+                .into(lThumbArt);
 
 
 
 
-        Log.d("onCreateView","On bind view holder called"+position);
+
+        Log.d("onCreateView", "On bind view holder called" + position);
 
 
     }
 
     @Override
     public int getItemCount() {
-       // Log.d("adapter", String.valueOf(music_Data_List.size()));
+        // Log.d("adapter", String.valueOf(music_Data_List.size()));
         return music_Data_List.size();
 
     }
@@ -113,7 +97,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView title,album;
+        TextView title, album;
         ImageView lThumbsArt;
 
         public ViewHolder(View itemView) {
@@ -128,10 +112,9 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
         @Override
         public void onClick(View v) {
-            clickListener.onClick(v,getAdapterPosition());
+            clickListener.onClick(v, getAdapterPosition());
         }
     }
-
 
 
 }

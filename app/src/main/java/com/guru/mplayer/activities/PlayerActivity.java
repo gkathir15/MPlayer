@@ -3,9 +3,12 @@ package com.guru.mplayer.activities;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -28,7 +31,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class PlayerActivity extends AppCompatActivity {
+public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener{
 
     ArrayList<Music_Data> mMusicList = new ArrayList();
     ArrayList<AlbumData> mAlbumList= new ArrayList<>();
@@ -80,7 +83,7 @@ public class PlayerActivity extends AppCompatActivity {
         mAlbumList = (ArrayList<AlbumData>) i.getSerializableExtra("albumList");
 
         Log.d(TAG, "passed value" + mSelectedPosition);
-        Log.d(TAG, mMusicList.get(mSelectedPosition).getTitle());
+//        Log.d(TAG, mMusicList.get(mSelectedPosition).getTitle());
         mTitle.setText(mMusicList.get(mSelectedPosition).getTitle());
         Log.d(TAG, String.valueOf(mMusicList.get(mSelectedPosition).getLength()));
         mDuration.setText(String.valueOf(mMsToSec(mMusicList.get(mSelectedPosition).getLength())));
@@ -91,7 +94,6 @@ public class PlayerActivity extends AppCompatActivity {
         playIntent = new Intent(this, MusicService.class);
         playIntent.putExtra("songsList", mMusicList);
         playIntent.putExtra("position", mSelectedPosition);
-        startService(playIntent);
         bindService(playIntent, mserviceConnection, Context.BIND_AUTO_CREATE);
         // updateProgress();
 
@@ -100,11 +102,11 @@ public class PlayerActivity extends AppCompatActivity {
         Log.d("isplaying out", String.valueOf(MusicService.IS_PLAYING));
 
 
-        while (MusicService.IS_PLAYING) {
-            Log.d("isplaying inLoop", String.valueOf(MusicService.IS_PLAYING));
-            Log.d("elapsed time", String.valueOf(musicService.getElapsedTime()));
-            mElapsed.setText(musicService.getElapsedTime());
-        }
+//        while (MusicService.IS_PLAYING) {
+//            Log.d("isplaying inLoop", String.valueOf(MusicService.IS_PLAYING));
+////            Log.d("elapsed time", String.valueOf(musicService.getElapsedTime()));
+//            mElapsed.setText(musicService.getElapsedTime());
+//        }
 
 
         play.setOnClickListener(new View.OnClickListener() {
@@ -153,15 +155,14 @@ public class PlayerActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-//                while(musicService.IS_PLAYING)
-//                {
-//                    mMusicSeek.setProgress((musicService.getElapsedTime()/musicService.getSongDuration())/100);
-//                }
+//
 
-//                updateProgress();
+
 
             }
         });
+
+
 
 
 
@@ -228,7 +229,7 @@ public class PlayerActivity extends AppCompatActivity {
         musicService.playNext();
         play.setImageDrawable(getDrawable(R.drawable.pause));
         setMetaDataOnUI();
-        setAlbumArt(mSelectedPosition+1);
+        setAlbumArt(++mSelectedPosition);
         spinCD(true);
 
     }
@@ -239,7 +240,7 @@ public class PlayerActivity extends AppCompatActivity {
         musicService.playPrev();
         play.setImageDrawable(getDrawable(R.drawable.pause));
         setMetaDataOnUI();
-        setAlbumArt(mSelectedPosition-1);
+        setAlbumArt(--mSelectedPosition);
         spinCD(true);
 
 
@@ -255,9 +256,10 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        musicService.onDestroy();
-        finish();
-        musicService.onUnbind(playIntent);
+       // musicService.startForeground(NOTIFICATION_ID,setNotification());
+       // musicService.onDestroy();
+        //finish();
+
     }
 
 
@@ -282,40 +284,26 @@ public class PlayerActivity extends AppCompatActivity {
 
 
     public void setAlbumArt(int pos) {
-        for (AlbumData temp : mAlbumList) {
-            if (mMusicList.get(pos).getAlbumName().equals(temp.getAlbumNAme())) {
 
-                Log.d("albums", temp.getAlbumNAme());
-
-                Picasso.get().load("file://" + temp.getAlbumArt())
-                        .placeholder(R.drawable.ic_vinyl)
-                        .error(R.drawable.ic_vinyl).
-                        into(mCd);
-                Log.d("art","Album art found");
-
-
-            } else {
-
-                Picasso.get().load(R.drawable.ic_vinyl).into(mCd);
-                Log.d("art","Album art not found");
-
-            }
-
-        }
+        Picasso.get().load(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"),
+                Long.parseLong(mMusicList.get(pos).getAlbumID())))
+                .placeholder(R.drawable.ic_vinyl)
+                .error(R.mipmap.dummy)
+                .into(mCd);
 
 
     }
 
+
     Notification setNotification()
-    {
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(this,CHANNEL_ID)
+    {        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, "DEFAULT")
+
                 .setContentText(mMusicList.get(mSelectedPosition).getTitle())
                 .setContentTitle("Jazz Player")
-                .setSmallIcon(R.drawable.ic_acoustic_guitar);
+                .setSmallIcon(R.mipmap.guitar_round);
 
         Intent resultIntent = new Intent(this, PlayerActivity.class);
-        PendingIntent resultPendingIntent =
-                PendingIntent.getActivity(this, 0, resultIntent,
+        PendingIntent resultPendingIntent =PendingIntent.getActivity(this, NOTIFICATION_ID, resultIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT);
         notification.setContentIntent(resultPendingIntent);
 
@@ -323,6 +311,8 @@ public class PlayerActivity extends AppCompatActivity {
 
 
     }
+
+
 
     @Override
     protected void onStop() {
@@ -333,5 +323,15 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+
+        setMetaDataOnUI();
+        setAlbumArt(mSelectedPosition+1);
+
+
+
     }
 }

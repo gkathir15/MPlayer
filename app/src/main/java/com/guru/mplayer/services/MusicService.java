@@ -9,6 +9,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.guru.mplayer.R;
 import com.guru.mplayer.data_model.Music_Data;
@@ -26,7 +27,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     String TAG = "musicService";
     int resumePos;
     public int position;
-    String getMediaID;
+    String MediaID;
     ArrayList<Music_Data> musicList = new ArrayList<>();
     public static boolean IS_PLAYING = false;
     int mCurrentDuration;
@@ -34,26 +35,36 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     boolean IS_PREPARED = false;
     int id = 5;
 
+
+
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         Log.d(TAG, "onStartCommand");
-        position = intent.getIntExtra("position", 0);
-        musicList = (ArrayList<Music_Data>) intent.getSerializableExtra("songsList");
-        mediaID = musicList.get(position).getId();
-        mSongsListSize = musicList.size();
-        Log.d(TAG, mediaID);
-        initMediaPlayer();
-
-
-      // return super.onStartCommand(intent, flags, startId);
-        return Service.START_NOT_STICKY;
+//        position = intent.getIntExtra("position", 0);
+//        musicList = (ArrayList<Music_Data>) intent.getSerializableExtra("songsList");
+//        mediaID = musicList.get(position).getId();
+//        mSongsListSize = musicList.size();
+//        Log.d(TAG, mediaID);
+//        initMediaPlayer();
+//
+//
+ return super.onStartCommand(intent, flags, startId);
+//        return Service.START_NOT_STICKY;
 
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
+
+        position = intent.getIntExtra("position", 0);
+        musicList = (ArrayList<Music_Data>) intent.getSerializableExtra("songsList");
+        mediaID = musicList.get(position).getId();
+        mSongsListSize = musicList.size();
+        Log.d(TAG, mediaID);
+        initMediaPlayer();
         return iBinder;
     }
 
@@ -74,12 +85,16 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     }
 
+
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
 
         mediaPlayer.reset();
+        Toast.makeText(getApplicationContext(),"Media player error"+what,Toast.LENGTH_LONG).show();
         return false;
     }
+
+
 
     @Override
     public void onPrepared(MediaPlayer mp) {
@@ -117,7 +132,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         mediaPlayer.setOnPreparedListener(this);
         mediaPlayer.reset();
         try {
-            Log.d(TAG, mediaID);
+
+            Log.d("MediaID to URi", mediaID);
             mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
                     android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     Long.parseLong(musicList.get(position).getId())));
@@ -129,6 +145,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                                               @Override
                                               public void onPrepared(MediaPlayer mp) {
+
                                                  // mp.start();
                                                   mediaPlayer.start();
                                                   IS_PLAYING =true;
@@ -265,7 +282,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         mediaID = musicList.get(position).getId();
         mediaPlayer.reset();
         try {
-            Log.d(TAG, mediaID);
+            Log.d("MediaID to URi", mediaID);
             mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
                     android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     Long.parseLong(mediaID)));
@@ -329,16 +346,18 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         return super.onUnbind(intent);
     }
 
-    private void setNotification() {
-        NotificationCompat.Builder notificationCompat = new NotificationCompat.Builder(this, getPackageName())
-                .setContentText("Music servioce")
-                .setContentTitle("Music Service")
-                .setSmallIcon(R.drawable.ic_acoustic_guitar)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true);
 
 
-    }
+//    private void setNotification() {
+//        NotificationCompat.Builder notificationCompat = new NotificationCompat.Builder(this, getPackageName())
+//                .setContentText("Music servioce")
+//                .setContentTitle("Music Service")
+//                .setSmallIcon(R.drawable.ic_acoustic_guitar)
+//                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                .setAutoCancel(true);
+//
+//
+//    }
 
 
 

@@ -39,7 +39,8 @@ public class MediaDataHelper {
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.ALBUM
+            MediaStore.Audio.Media.ALBUM,
+                 MediaStore.Audio.Media.ALBUM_ID
     },null,null,null);
 
 
@@ -54,14 +55,15 @@ public class MediaDataHelper {
                    Log.d("cursorfirst", "moveto first");
 
 
-
+                   // public Music_Data(String id,int length, String title, String albumName, String albumArt)
                    do {
 
 
                      Music_Data music_data =  new Music_Data(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media._ID))
                                , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.TITLE))
                                , mCursor.getInt(mCursor.getColumnIndex(MediaStore.Audio.Media.DURATION))
-                             , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
+                             , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM))
+                     ,mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)));
 //
  //                  music_data.setAlbumArt(mAlbumCursor.getString(mAlbumCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART)));
                     // Log.d("albumArt",music_data.getAlbumArt());
@@ -95,7 +97,7 @@ public class MediaDataHelper {
         return  TracksList;
     }
 
-    public ArrayList<AlbumData> QureryAlbum(Context context) {
+    public ArrayList<AlbumData> queryAlbum(Context context) {
 
         mAlbumCursor = context.getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
                 new String[]{MediaStore.Audio.Albums.ALBUM_ART,
@@ -109,6 +111,7 @@ public class MediaDataHelper {
 
 
             do {
+
                 // constructor Signature AlbumData(String albumNAme,String albumID, String albumArt)
                 AlbumData albumData = new AlbumData(
                         mAlbumCursor.getString(mAlbumCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM)),

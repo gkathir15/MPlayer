@@ -10,11 +10,9 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.guru.mplayer.R;
 import com.guru.mplayer.adapter.SongListAdapter;
@@ -22,7 +20,6 @@ import com.guru.mplayer.data_model.AlbumData;
 import com.guru.mplayer.data_model.Music_Data;
 import com.guru.mplayer.helper.MediaDataHelper;
 import com.guru.mplayer.interfaces.OnItemClickListener;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -64,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         super.onDestroy();
         queryMusicData.cancel(true);
 
+
     }
 
     @Override
@@ -77,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
     @Override
     public void onClick(View View, int Position) {
-        Toast.makeText(this, "from recycler View" + Position, Toast.LENGTH_LONG).show();
+      //  Toast.makeText(this, "from recycler View" + Position, Toast.LENGTH_LONG).show();
         Intent i = new Intent(this, PlayerActivity.class);
         i.putExtra("songsList", songsList);
         i.putExtra("position", Position);
@@ -108,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
             ArrayList<Music_Data> lArrayList;
             lArrayList = mediaDataHelper.queryMediaMeta(MainActivity.this);
-            mAlbumList.addAll(mediaDataHelper.QureryAlbum(MainActivity.this));
+            mAlbumList.addAll(mediaDataHelper.queryAlbum(MainActivity.this));
 
 
             return lArrayList;
