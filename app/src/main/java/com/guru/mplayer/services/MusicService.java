@@ -65,7 +65,10 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         mSongsListSize = musicList.size();
         Log.d(TAG, mediaID);
         initMediaPlayer();
+        Log.d("mListSize", String.valueOf(musicList.size()));
+        Log.d("mPosition", String.valueOf(position));
         return iBinder;
+
     }
 
     @Override
@@ -108,18 +111,24 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public void pause() {
         if (IS_PLAYING) {
-           mCurrentDuration = mediaPlayer.getCurrentPosition();
+//           mCurrentDuration = mediaPlayer.getCurrentPosition();
+            IS_PLAYING =false;
             mediaPlayer.pause();
 
-            IS_PLAYING =false;
-            mediaPlayer.reset();
+
+//            mediaPlayer.reset();
              }
+//        mediaPlayer.pause();
+//        IS_PLAYING =false;
     }
 
     public void playOnPause() {
         if (!IS_PLAYING) {
+            IS_PLAYING = true;
+            mediaPlayer.start();
+
 //
-            playOnPauseFromDuration(mCurrentDuration);
+           // playOnPauseFromDuration(mCurrentDuration);
         }
     }
 
@@ -159,39 +168,41 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     public void seekToDuration(final int duration)
     {
 
-        mediaPlayer.reset();
-        try {
-            Log.d(TAG, mediaID);
-            mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
-                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    Long.parseLong(mediaID)));
-
-        } catch (IOException e) {
-            Log.d(TAG, "Crashed while Setting uri");
-        }
-
-
-
-        mediaPlayer.prepareAsync();
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mediaPlayer.seekTo(duration);
-
-
-                Log.d("seekduration", String.valueOf(duration));
-//                mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-//                    @Override
-//                    public void onSeekComplete(MediaPlayer mp) {
-//                        mediaPlayer.start();
-//                    }
-//                });
-                mediaPlayer.start();
-
-                // mediaPlayer.start();
-                IS_PLAYING=true;
-            }
-        });
+//        mediaPlayer.reset();
+//        try {
+//            Log.d(TAG, mediaID);
+//            mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
+//                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+//                    Long.parseLong(mediaID)));
+//
+//        } catch (IOException e) {
+//            Log.d(TAG, "Crashed while Setting uri");
+//        }
+//
+//
+//
+//        mediaPlayer.prepareAsync();
+//        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+//            @Override
+//            public void onPrepared(MediaPlayer mp) {
+//                mediaPlayer.seekTo(duration);
+//
+//
+//                Log.d("seekduration", String.valueOf(duration));
+////                mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+////                    @Override
+////                    public void onSeekComplete(MediaPlayer mp) {
+////                        mediaPlayer.start();
+////                    }
+////                });
+//                mediaPlayer.start();
+//
+//                // mediaPlayer.start();
+//                IS_PLAYING=true;
+//            }
+//        });
+        mediaPlayer.seekTo(duration);
+        IS_PLAYING=true;
 
     }
 
@@ -213,12 +224,6 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
             @Override
             public void onPrepared(MediaPlayer mp) {
                 mediaPlayer.seekTo(duration);
-//                mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-//                    @Override
-//                    public void onSeekComplete(MediaPlayer mp) {
-//                        mediaPlayer.start();
-//                    }
-//                });
                 mediaPlayer.start();
                 Log.d(TAG, String.valueOf(duration));
                 // mediaPlayer.start();
@@ -231,12 +236,12 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public void playNext()
     {
-        if (position == mSongsListSize-1)
+        if (position == musicList.size()-1)
         {
             position = 0;
         }
         else {
-            position = position + 1;
+            position = ++position;
         }
 
 
@@ -273,10 +278,11 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
         if (position == 0)
         {
-            position = mSongsListSize-1;
+            position = --mSongsListSize;
         }
         else
-            position = position-1;
+        {
+            position = --position;}
 
 
         mediaID = musicList.get(position).getId();
@@ -320,8 +326,16 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public int getElapsedTime()
     {
-        Log.d("currpos", String.valueOf(mediaPlayer.getCurrentPosition()));
-       return mediaPlayer.getCurrentPosition();
+        int lTempPos = 0;
+        if (mediaPlayer.isPlaying()){
+            lTempPos = mediaPlayer.getCurrentPosition();
+        Log.d("currpos", String.valueOf(lTempPos));
+       return mediaPlayer.getCurrentPosition();}
+
+       else
+        {
+            return lTempPos;
+        }
 
     }
 

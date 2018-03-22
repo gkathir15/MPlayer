@@ -69,11 +69,22 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
         ImageView lThumbArt = holder.lThumbsArt;
         mTitle.setText(music_data.getTitle());
         mAlbum.setText(music_data.getAlbumName());
-        Picasso.get().load(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"),
-                Long.parseLong(music_Data_List.get(position).getAlbumID())))
-                .placeholder(R.drawable.ic_vinyl)
+//        Uri uri =ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"),
+//                Long.parseLong(music_Data_List.get(position).getAlbumID()));
+       // Uri uri = Uri.parse("content://media/external/audio/albumart"+music_Data_List.get(position).getAlbumID());
+
+        Log.d("Via uriParse","content://media/external/audio/albumart/"+music_Data_List.get(position).getAlbumID());
+        Log.d("Via WithAppendedID",
+                String.valueOf(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"),
+                        Long.parseLong(music_Data_List.get(position).getAlbumID()))));
+
+        Log.d("albumID",""+music_Data_List.get(position).getAlbumID());
+        //Picasso.get().load(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"),Long.parseLong(music_Data_List.get(position).getAlbumID())))
+        Picasso.get().load(Uri.parse("content://media/external/audio/albumart/"+music_Data_List.get(position).getAlbumID()))
+        .placeholder(R.drawable.ic_vinyl)
                 .error(R.drawable.ic_vinyl)
                 .into(lThumbArt);
+
 
 
 

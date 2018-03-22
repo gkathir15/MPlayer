@@ -11,6 +11,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.View;
 
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         isReadStoragePermissionGranted();
         queryMusicData.execute();
 //        if (!isReadStoragePermissionGranted()) {
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 //        }
 
         songsRecyclerView = findViewById(R.id.tracks_recycler_view);
-        songsRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        songsRecyclerView.setLayoutManager(new GridLayoutManager(this,3));
         songListAdapter = new SongListAdapter(R.layout.list_item, songsList, mAlbumList);
         songsRecyclerView.setAdapter(songListAdapter);
         songListAdapter.setClickListener(this);
@@ -106,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
             ArrayList<Music_Data> lArrayList;
             lArrayList = mediaDataHelper.queryMediaMeta(MainActivity.this);
-            mAlbumList.addAll(mediaDataHelper.queryAlbum(MainActivity.this));
 
 
             return lArrayList;

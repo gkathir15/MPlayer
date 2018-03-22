@@ -7,7 +7,6 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
@@ -31,7 +30,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener{
+public class PlayerActivity extends AppCompatActivity {
 
     ArrayList<Music_Data> mMusicList = new ArrayList();
     ArrayList<AlbumData> mAlbumList= new ArrayList<>();
@@ -41,12 +40,13 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     String CHANNEL_ID = "5";
     TextView mTitle, mAlbum, mElapsed, mDuration;
     ImageView mCd, prev, play, next;
-    SeekBar mMusicSeek;
+    SeekBar mSeekBar;
     Animation rotation;
     boolean isBound = false;
     MusicService musicService;
     Intent playIntent;
     Handler mHandler;
+    int mSongsListSize;
     //Drawable drawablePlay = getDrawable(R.drawable.play);
     private ServiceConnection mserviceConnection = new ServiceConnection() {
         @Override
@@ -73,14 +73,14 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         prev = findViewById(R.id.prev);
         play = findViewById(R.id.play);
         next = findViewById(R.id.next);
-        mMusicSeek = findViewById(R.id.seekbar);
+        mSeekBar = findViewById(R.id.seekbar);
         mDuration = findViewById(R.id.duration);
         mElapsed = findViewById(R.id.elapsed);
         rotation = AnimationUtils.loadAnimation(this, R.anim.spin);
         Intent i = getIntent();
         mMusicList = (ArrayList<Music_Data>) i.getSerializableExtra("songsList");
         mSelectedPosition = i.getIntExtra("position", 0);
-        mAlbumList = (ArrayList<AlbumData>) i.getSerializableExtra("albumList");
+        mSongsListSize = mMusicList.size();
 
         Log.d(TAG, "passed value" + mSelectedPosition);
 //        Log.d(TAG, mMusicList.get(mSelectedPosition).getTitle());
@@ -95,7 +95,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         playIntent.putExtra("songsList", mMusicList);
         playIntent.putExtra("position", mSelectedPosition);
         bindService(playIntent, mserviceConnection, Context.BIND_AUTO_CREATE);
-        // updateProgress();
+        //updateProgress();
 
 
         //setMetaDataOnUI();
@@ -113,7 +113,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "onclick pause");
-                pauseplay();
+                pauseOnPlay();
                 // updateElapsedTime();
             }
         });
@@ -136,14 +136,16 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         });
 
 
-        mMusicSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
 
-//                mHandler.removeCallbacks(updateElapsedTime);
+               mHandler.removeCallbacks(updateElapsedTime);
                 seekBar.setProgress(progress);
+                if(fromUser)
                 seekTo(progress * musicService.getSongDuration() / 100);
+
 
 
             }
@@ -174,11 +176,6 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         Log.d(TAG, String.valueOf(mMusicList.get(lPosition).getLength()));
         mDuration.setText(String.valueOf(mMsToSec(mMusicList.get(lPosition).getLength())));
         mAlbum.setText(mMusicList.get(lPosition).getAlbumName());
-//        while(MusicService.IS_PLAYING)
-//        {
-//            Log.d("elapsed time", String.valueOf(musicService.getElapsedTime()));
-//            mElapsed.setText(musicService.getElapsedTime());
-//        }
 
     }
 
@@ -207,7 +204,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
     }
 
-    public void pauseplay() {
+    public void pauseOnPlay() {
         Log.d(TAG, "pause play method");
         if (musicService.IS_PLAYING) {
             spinCD(false);
@@ -218,6 +215,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             spinCD(true);
             play.setImageDrawable(getDrawable(R.drawable.pause));
             musicService.playOnPause();
+            updateProgress();
         }
 
 
@@ -225,22 +223,38 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
     public void playNext() {
         spinCD(false);
-        mMusicSeek.setProgress(0);
+        mSeekBar.setProgress(0);
         musicService.playNext();
         play.setImageDrawable(getDrawable(R.drawable.pause));
+
+        if (mSelectedPosition == --mSongsListSize)
+        {
+            mSelectedPosition = 0;
+        }
+        else {
+            mSelectedPosition = ++mSelectedPosition;
+        }
+
         setMetaDataOnUI();
-        setAlbumArt(++mSelectedPosition);
+        setAlbumArt(mSelectedPosition);
         spinCD(true);
 
     }
 
     public void playPrev() {
         spinCD(false);
-        mMusicSeek.setProgress(0);
+        mSeekBar.setProgress(0);
         musicService.playPrev();
         play.setImageDrawable(getDrawable(R.drawable.pause));
+        if (mSelectedPosition == 0)
+        {
+            mSelectedPosition = --mSongsListSize;
+        }
+        else
+        {
+            mSelectedPosition = --mSelectedPosition;}
         setMetaDataOnUI();
-        setAlbumArt(--mSelectedPosition);
+       setAlbumArt(mSelectedPosition);
         spinCD(true);
 
 
@@ -263,24 +277,26 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     }
 
 
-//    void updateProgress() {
-//        mHandler.postDelayed(updateElapsedTime, 1000);
-//
-//    }
+    void updateProgress() {
 
-//    private Runnable updateElapsedTime = new Runnable() {
-//        @Override
-//        public void run() {
-//            mMusicSeek.setProgress(((musicService.getElapsedTime() / musicService.getSongDuration()) * 100));
-//            try {
-//                Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            mHandler.postDelayed(this, 100);
-//
-//        }
-//    };
+        mHandler.postDelayed(updateElapsedTime, 1000);
+
+
+    }
+
+    private Runnable updateElapsedTime = new Runnable() {
+        @Override
+        public void run() {
+            if (MusicService.IS_PLAYING)
+                mSeekBar.setMax(100);
+            mSeekBar.setProgress(musicService.getElapsedTime()*100/musicService.getSongDuration());
+            mElapsed.setText(mMsToSec(musicService.getElapsedTime()));
+            Log.d("updation", String.valueOf(musicService.getElapsedTime()*100/musicService.getSongDuration()));
+            Log.d("vals"," elap "+String.valueOf(musicService.getElapsedTime()+" dur "+musicService.getSongDuration()));
+            mHandler.postDelayed(this, 100);
+
+        }
+    };
 
 
     public void setAlbumArt(int pos) {
@@ -297,7 +313,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
     Notification setNotification()
     {        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, "DEFAULT")
-
+                .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle())
                 .setContentText(mMusicList.get(mSelectedPosition).getTitle())
                 .setContentTitle("Jazz Player")
                 .setSmallIcon(R.mipmap.guitar_round);
@@ -314,6 +330,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
 
 
+
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -325,13 +343,13 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         super.onDestroy();
     }
 
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-
-        setMetaDataOnUI();
-        setAlbumArt(mSelectedPosition+1);
-
-
-
-    }
+//    @Override
+//    public void onCompletion(MediaPlayer mp) {
+//
+//        setMetaDataOnUI();
+//        setAlbumArt(musicService.position);
+//
+//
+//
+//    }
 }
