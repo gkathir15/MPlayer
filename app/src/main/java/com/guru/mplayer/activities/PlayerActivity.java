@@ -178,6 +178,21 @@ public class PlayerActivity extends AppCompatActivity {
         super.onResume();
         IntentFilter filter = new IntentFilter(MusicService.COMPLETION_CAST);
         LocalBroadcastManager.getInstance(this).registerReceiver(completionReciever,filter);
+        IntentFilter lHeadsetFilter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+        HeadSet_IS_PLUGGED headSet_is_plugged = new HeadSet_IS_PLUGGED();
+        registerReceiver(headSet_is_plugged,lHeadsetFilter);
+    }
+
+    private class HeadSet_IS_PLUGGED extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getIntExtra("state",-1)== 0)
+            {
+                pause();
+
+            }
+        }
     }
 
     private BroadcastReceiver completionReciever = new BroadcastReceiver() {
@@ -245,6 +260,14 @@ public class PlayerActivity extends AppCompatActivity {
             updateProgress();
         }
 
+
+    }
+
+    public  void pause()
+    {
+        if (musicService.IS_PLAYING) {
+            musicService.pause();
+            play.setImageDrawable(getDrawable(R.drawable.play));}
 
     }
 
@@ -369,6 +392,7 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(completionReciever);
+        unregisterReceiver(completionReciever);
     }
 
 //    @Override
