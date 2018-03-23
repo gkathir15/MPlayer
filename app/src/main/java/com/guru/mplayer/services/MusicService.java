@@ -8,6 +8,7 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -34,6 +35,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     int mSongsListSize;
     boolean IS_PREPARED = false;
     int id = 5;
+    public static String COMPLETION_CAST = "TRACK_COMPLETED";
 
 
 
@@ -85,6 +87,11 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
        Log.d(TAG,"Current song completed");
        IS_PLAYING =false;
         playNext();
+        Intent intent = new Intent(COMPLETION_CAST);
+        intent.putExtra("position",position);
+        intent.putExtra("status","playing next");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        Log.d("completed","Broadcast fired");
 
     }
 
@@ -241,7 +248,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
             position = 0;
         }
         else {
-            position = ++position;
+            ++position;
         }
 
 

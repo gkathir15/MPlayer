@@ -2,15 +2,18 @@ package com.guru.mplayer.activities;
 
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -169,6 +172,30 @@ public class PlayerActivity extends AppCompatActivity {
 
 
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter(MusicService.COMPLETION_CAST);
+        LocalBroadcastManager.getInstance(this).registerReceiver(completionReciever,filter);
+    }
+
+    private BroadcastReceiver completionReciever = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("Broadcast recieved","updating next meta");
+            if (intent.getStringExtra("status")== "playing next")
+            {
+
+                mSelectedPosition = intent.getIntExtra("position",++mSelectedPosition);
+                setMetaDataOnUI();
+                setAlbumArt(musicService.position);
+
+            }
+
+
+        }
+    };
 
     public void setMetaDataOnUI() {
         int lPosition = musicService.position;
@@ -341,6 +368,7 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(completionReciever);
     }
 
 //    @Override
