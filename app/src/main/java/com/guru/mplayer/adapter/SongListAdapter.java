@@ -1,10 +1,8 @@
 package com.guru.mplayer.adapter;
 
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,12 +12,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.guru.mplayer.R;
-import com.guru.mplayer.data_model.AlbumData;
 import com.guru.mplayer.data_model.Music_Data;
 import com.guru.mplayer.interfaces.OnItemClickListener;
 import com.squareup.picasso.Picasso;
 
-import java.net.URI;
 import java.util.ArrayList;
 
 /**
@@ -29,19 +25,16 @@ import java.util.ArrayList;
 public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> {
 
     private ArrayList<Music_Data> music_Data_List;
-    private ArrayList<AlbumData> mAlbumList;
     private int itemList;
     private OnItemClickListener clickListener;
-    AlbumData albumData = new AlbumData();
     Context mContext;
 
 
-    public SongListAdapter(int list_item, ArrayList<Music_Data> songsList, ArrayList<AlbumData> lAlbumlist) {
+    public SongListAdapter(int list_item, ArrayList<Music_Data> songsList) {
 
 
         itemList = list_item;
         music_Data_List = songsList;
-        mAlbumList = lAlbumlist;
 
 
     }

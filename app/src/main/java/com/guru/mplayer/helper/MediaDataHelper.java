@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.provider.MediaStore;
 import android.util.Log;
 
-import com.guru.mplayer.data_model.AlbumData;
 import com.guru.mplayer.data_model.Music_Data;
 
 import java.util.ArrayList;

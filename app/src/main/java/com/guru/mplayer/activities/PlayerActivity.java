@@ -1,7 +1,7 @@
 package com.guru.mplayer.activities;
 
-import android.app.Notification;
-import android.app.PendingIntent;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentUris;
@@ -10,8 +10,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PersistableBundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -25,7 +27,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.guru.mplayer.R;
-import com.guru.mplayer.data_model.AlbumData;
 import com.guru.mplayer.data_model.Music_Data;
 import com.guru.mplayer.services.MusicService;
 import com.guru.mplayer.services.MusicService.LocalBinder;
@@ -36,7 +37,6 @@ import java.util.ArrayList;
 public class PlayerActivity extends AppCompatActivity {
 
     ArrayList<Music_Data> mMusicList = new ArrayList();
-    ArrayList<AlbumData> mAlbumList= new ArrayList<>();
     int mSelectedPosition;
     String TAG = "player";
     int NOTIFICATION_ID = 5;
@@ -50,8 +50,9 @@ public class PlayerActivity extends AppCompatActivity {
     Intent playIntent;
     Handler mHandler;
     int mSongsListSize;
+    private HeadSet_IS_PLUGGED headSet_is_plugged = new HeadSet_IS_PLUGGED();
     //Drawable drawablePlay = getDrawable(R.drawable.play);
-    private ServiceConnection mserviceConnection = new ServiceConnection() {
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             LocalBinder binder = (LocalBinder) service;
@@ -84,6 +85,7 @@ public class PlayerActivity extends AppCompatActivity {
         mMusicList = (ArrayList<Music_Data>) i.getSerializableExtra("songsList");
         mSelectedPosition = i.getIntExtra("position", 0);
         mSongsListSize = mMusicList.size();
+        mSeekBar.setMax(100);
 
         Log.d(TAG, "passed value" + mSelectedPosition);
 //        Log.d(TAG, mMusicList.get(mSelectedPosition).getTitle());
@@ -97,19 +99,14 @@ public class PlayerActivity extends AppCompatActivity {
         playIntent = new Intent(this, MusicService.class);
         playIntent.putExtra("songsList", mMusicList);
         playIntent.putExtra("position", mSelectedPosition);
-        bindService(playIntent, mserviceConnection, Context.BIND_AUTO_CREATE);
-        //updateProgress();
+        //startService(playIntent);
+        bindService(playIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        updateProgress();
 
 
         //setMetaDataOnUI();
         Log.d("isplaying out", String.valueOf(MusicService.IS_PLAYING));
 
-
-//        while (MusicService.IS_PLAYING) {
-//            Log.d("isplaying inLoop", String.valueOf(MusicService.IS_PLAYING));
-////            Log.d("elapsed time", String.valueOf(musicService.getElapsedTime()));
-//            mElapsed.setText(musicService.getElapsedTime());
-//        }
 
 
         play.setOnClickListener(new View.OnClickListener() {
@@ -117,7 +114,6 @@ public class PlayerActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, "onclick pause");
                 pauseOnPlay();
-                // updateElapsedTime();
             }
         });
 
@@ -125,7 +121,6 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 playPrev();
-                //updateElapsedTime();
             }
         });
 
@@ -133,7 +128,6 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 playNext();
-                // updateElapsedTime();
 
             }
         });
@@ -167,6 +161,15 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
+         // registering Broadcast Receivers
+        IntentFilter filter = new IntentFilter(MusicService.COMPLETION_CAST);
+        LocalBroadcastManager.getInstance(this).registerReceiver(completionReciever,filter);
+        IntentFilter lHeadsetFilter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+        registerReceiver(headSet_is_plugged,lHeadsetFilter);
+
+
+
+
 
 
 
@@ -176,11 +179,7 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter(MusicService.COMPLETION_CAST);
-        LocalBroadcastManager.getInstance(this).registerReceiver(completionReciever,filter);
-        IntentFilter lHeadsetFilter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
-        HeadSet_IS_PLUGGED headSet_is_plugged = new HeadSet_IS_PLUGGED();
-        registerReceiver(headSet_is_plugged,lHeadsetFilter);
+
     }
 
     private class HeadSet_IS_PLUGGED extends BroadcastReceiver{
@@ -202,9 +201,11 @@ public class PlayerActivity extends AppCompatActivity {
             if (intent.getStringExtra("status")== "playing next")
             {
 
+                mHandler.removeCallbacks(updateElapsedTime);
                 mSelectedPosition = intent.getIntExtra("position",++mSelectedPosition);
                 setMetaDataOnUI();
                 setAlbumArt(musicService.position);
+                updateProgress();
 
             }
 
@@ -240,9 +241,11 @@ public class PlayerActivity extends AppCompatActivity {
         int sec = (milliSec / 1000) % 60;
         int mins = (milliSec / 1000) / 60;
 
-        calculatedDuration = mins + ":" + sec;
-        Log.d(TAG, calculatedDuration);
-        return calculatedDuration;
+        //calculatedDuration = mins + ":" + sec;
+//        Log.d(TAG, calculatedDuration);
+        String lCalcTime = String.format("%02d:%02d", mins, sec);
+        Log.d(TAG, lCalcTime);
+        return lCalcTime;
 
     }
 
@@ -257,7 +260,7 @@ public class PlayerActivity extends AppCompatActivity {
             spinCD(true);
             play.setImageDrawable(getDrawable(R.drawable.pause));
             musicService.playOnPause();
-            updateProgress();
+           updateProgress();
         }
 
 
@@ -273,6 +276,8 @@ public class PlayerActivity extends AppCompatActivity {
 
     public void playNext() {
         spinCD(false);
+        mHandler.removeCallbacks(updateElapsedTime);
+        mElapsed.setText("00:00");
         mSeekBar.setProgress(0);
         musicService.playNext();
         play.setImageDrawable(getDrawable(R.drawable.pause));
@@ -288,10 +293,13 @@ public class PlayerActivity extends AppCompatActivity {
         setMetaDataOnUI();
         setAlbumArt(mSelectedPosition);
         spinCD(true);
+        updateProgress();
 
     }
 
     public void playPrev() {
+        mHandler.removeCallbacks(updateElapsedTime);
+        mElapsed.setText("00:00");
         spinCD(false);
         mSeekBar.setProgress(0);
         musicService.playPrev();
@@ -306,6 +314,7 @@ public class PlayerActivity extends AppCompatActivity {
         setMetaDataOnUI();
        setAlbumArt(mSelectedPosition);
         spinCD(true);
+        updateProgress();
 
 
     }
@@ -313,6 +322,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     public void seekTo(int duration) {
         musicService.seekToDuration(duration);
+        updateProgress();
 
     }
 
@@ -338,7 +348,7 @@ public class PlayerActivity extends AppCompatActivity {
         @Override
         public void run() {
             if (MusicService.IS_PLAYING)
-                mSeekBar.setMax(100);
+
             mSeekBar.setProgress(musicService.getElapsedTime()*100/musicService.getSongDuration());
             mElapsed.setText(mMsToSec(musicService.getElapsedTime()));
             Log.d("updation", String.valueOf(musicService.getElapsedTime()*100/musicService.getSongDuration()));
@@ -361,38 +371,69 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
 
-    Notification setNotification()
-    {        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, "DEFAULT")
-                .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle())
-                .setContentText(mMusicList.get(mSelectedPosition).getTitle())
-                .setContentTitle("Jazz Player")
-                .setSmallIcon(R.mipmap.guitar_round);
 
-        Intent resultIntent = new Intent(this, PlayerActivity.class);
-        PendingIntent resultPendingIntent =PendingIntent.getActivity(this, NOTIFICATION_ID, resultIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
-        notification.setContentIntent(resultPendingIntent);
+    NotificationCompat.Builder setNotification()
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,"MUSIC", NotificationManager.IMPORTANCE_HIGH);
+            NotificationCompat.Builder notification = new NotificationCompat.Builder(this,CHANNEL_ID);
+            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            notificationManager.createNotificationChannel(notificationChannel);
+            return notification;
+        }
 
-        return notification.build();
+//        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, "DEFAULT")
+//                .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle())
+//                .setContentText(mMusicList.get(mSelectedPosition).getTitle())
+//                .setContentTitle("Jazz Player")
+//                .setSmallIcon(R.mipmap.guitar_round);
+//
+//        Intent resultIntent = new Intent(this, PlayerActivity.class);
+//        PendingIntent resultPendingIntent =PendingIntent.getActivity(this, NOTIFICATION_ID, resultIntent,
+//                        PendingIntent.FLAG_UPDATE_CURRENT);
+//        notification.setContentIntent(resultPendingIntent);
+//        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//
+//
+//
+//        return notification.build();
+        return null;
 
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
 
-
-
+    }
 
     @Override
     protected void onStop() {
         super.onStop();
-        musicService.startForeground(NOTIFICATION_ID, setNotification());
+//        LocalBroadcastManager.getInstance(this).unregisterReceiver(completionReciever);
+//        unregisterReceiver(headSet_is_plugged);
+//        Intent intent = new Intent(this,MusicService.class);
+//        startService(intent);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,"MUSIC", NotificationManager.IMPORTANCE_HIGH);
+//            NotificationCompat.Builder notification = new NotificationCompat.Builder(this,CHANNEL_ID);
+//            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//            notificationManager.createNotificationChannel(notificationChannel);
+//        musicService.startForeground(NOTIFICATION_ID, setNotification());
+        mHandler.removeCallbacks(updateElapsedTime);
+        this.unbindService(mServiceConnection);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.d("onStop","onstop called");
         LocalBroadcastManager.getInstance(this).unregisterReceiver(completionReciever);
-        unregisterReceiver(completionReciever);
+        if(headSet_is_plugged != null)
+        unregisterReceiver(headSet_is_plugged);
+        headSet_is_plugged = null;
+
     }
 
 //    @Override
@@ -404,4 +445,16 @@ public class PlayerActivity extends AppCompatActivity {
 //
 //
 //    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        outState.putBoolean("serviceStatus", isBound);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        isBound = savedInstanceState.getBoolean("serviceStatus");
+    }
 }

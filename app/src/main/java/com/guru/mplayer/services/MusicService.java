@@ -36,6 +36,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     boolean IS_PREPARED = false;
     int id = 5;
     public static String COMPLETION_CAST = "TRACK_COMPLETED";
+    int lTempPos = 0;
 
 
 
@@ -52,8 +53,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 //        initMediaPlayer();
 //
 //
- return super.onStartCommand(intent, flags, startId);
-//        return Service.START_NOT_STICKY;
+ //return super.onStartCommand(intent, flags, startId);
+       return Service.START_NOT_STICKY;
 
     }
 
@@ -333,11 +334,13 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public int getElapsedTime()
     {
-        int lTempPos = 0;
-        if (mediaPlayer.isPlaying()){
+
+        if (mediaPlayer.isPlaying())
+        {
             lTempPos = mediaPlayer.getCurrentPosition();
         Log.d("currpos", String.valueOf(lTempPos));
-       return mediaPlayer.getCurrentPosition();}
+       return lTempPos;
+        }
 
        else
         {
@@ -357,12 +360,12 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        mediaPlayer.release();
+
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
-//        mediaPlayer.release();
+       mediaPlayer.release();
 
         return super.onUnbind(intent);
     }
