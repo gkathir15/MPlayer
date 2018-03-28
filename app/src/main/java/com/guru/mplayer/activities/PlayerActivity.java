@@ -27,7 +27,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.guru.mplayer.R;
-import com.guru.mplayer.data_model.Music_Data;
+import com.guru.mplayer.data_model.MusicData;
 import com.guru.mplayer.services.MusicService;
 import com.guru.mplayer.services.MusicService.LocalBinder;
 import com.squareup.picasso.Picasso;
@@ -36,13 +36,13 @@ import java.util.ArrayList;
 
 public class PlayerActivity extends AppCompatActivity {
 
-    ArrayList<Music_Data> mMusicList = new ArrayList();
+    ArrayList<MusicData> mMusicList = new ArrayList();
     int mSelectedPosition;
     String TAG = "player";
     int NOTIFICATION_ID = 5;
     String CHANNEL_ID = "5";
     TextView mTitle, mAlbum, mElapsed, mDuration;
-    ImageView mCd, prev, play, next;
+    ImageView mCd, mPrev, mPlay, mNext;
     SeekBar mSeekBar;
     Animation rotation;
     boolean isBound = false;
@@ -50,8 +50,7 @@ public class PlayerActivity extends AppCompatActivity {
     Intent playIntent;
     Handler mHandler;
     int mSongsListSize;
-    private HeadSet_IS_PLUGGED headSet_is_plugged = new HeadSet_IS_PLUGGED();
-    //Drawable drawablePlay = getDrawable(R.drawable.play);
+    private HeadSetIsPlugged headsetIsPlugged;
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -63,6 +62,7 @@ public class PlayerActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             isBound = false;
+            musicService.playAtPos(mSelectedPosition);
         }
     };
 
@@ -70,19 +70,19 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
-        mTitle = (TextView) findViewById(R.id.title);
+        mTitle = findViewById(R.id.title);
         mHandler = new Handler();
-        mAlbum = (TextView) findViewById(R.id.album);
+        mAlbum = findViewById(R.id.album);
         mCd = findViewById(R.id.cd);
-        prev = findViewById(R.id.prev);
-        play = findViewById(R.id.play);
-        next = findViewById(R.id.next);
+        mPrev = findViewById(R.id.prev);
+        mPlay = findViewById(R.id.play);
+        mNext = findViewById(R.id.next);
         mSeekBar = findViewById(R.id.seekbar);
         mDuration = findViewById(R.id.duration);
         mElapsed = findViewById(R.id.elapsed);
         rotation = AnimationUtils.loadAnimation(this, R.anim.spin);
         Intent i = getIntent();
-        mMusicList = (ArrayList<Music_Data>) i.getSerializableExtra("songsList");
+        mMusicList = (ArrayList<MusicData>) i.getSerializableExtra("songsList");
         mSelectedPosition = i.getIntExtra("position", 0);
         mSongsListSize = mMusicList.size();
         mSeekBar.setMax(100);
@@ -96,12 +96,25 @@ public class PlayerActivity extends AppCompatActivity {
         setAlbumArt(mSelectedPosition);
 
         //spinCD(true);
-        playIntent = new Intent(this, MusicService.class);
+        playIntent = new Intent(getApplicationContext(), MusicService.class);
         playIntent.putExtra("songsList", mMusicList);
         playIntent.putExtra("position", mSelectedPosition);
-        //startService(playIntent);
-        bindService(playIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-        updateProgress();
+        startService(playIntent);
+        if(!isBound)
+        {
+            Log.d("PlayerActivity","is not bound,binding Service");
+
+            bindService(playIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+            updateProgress();
+
+        }
+        else
+            {
+                musicService.playAtPos(mSelectedPosition);
+                Log.d("playerActivity","Service is bound");
+
+            }
+
 
 
         //setMetaDataOnUI();
@@ -109,7 +122,7 @@ public class PlayerActivity extends AppCompatActivity {
 
 
 
-        play.setOnClickListener(new View.OnClickListener() {
+        mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "onclick pause");
@@ -117,14 +130,14 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
-        prev.setOnClickListener(new View.OnClickListener() {
+        mPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 playPrev();
             }
         });
 
-        next.setOnClickListener(new View.OnClickListener() {
+        mNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 playNext();
@@ -162,10 +175,11 @@ public class PlayerActivity extends AppCompatActivity {
         });
 
          // registering Broadcast Receivers
+         headsetIsPlugged= new HeadSetIsPlugged();
         IntentFilter filter = new IntentFilter(MusicService.COMPLETION_CAST);
-        LocalBroadcastManager.getInstance(this).registerReceiver(completionReciever,filter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(completionReceiver,filter);
         IntentFilter lHeadsetFilter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
-        registerReceiver(headSet_is_plugged,lHeadsetFilter);
+        registerReceiver(headsetIsPlugged,lHeadsetFilter);
 
 
 
@@ -182,7 +196,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     }
 
-    private class HeadSet_IS_PLUGGED extends BroadcastReceiver{
+    private class HeadSetIsPlugged extends BroadcastReceiver{
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -194,17 +208,18 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    private BroadcastReceiver completionReciever = new BroadcastReceiver() {
+    private BroadcastReceiver completionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("Broadcast recieved","updating next meta");
+            Log.d("Broadcast recieved","updating mNext meta");
             if (intent.getStringExtra("status")== "playing next")
             {
 
                 mHandler.removeCallbacks(updateElapsedTime);
                 mSelectedPosition = intent.getIntExtra("position",++mSelectedPosition);
+                Log.d("Broadcast recieved", String.valueOf(mSelectedPosition));
                 setMetaDataOnUI();
-                setAlbumArt(musicService.position);
+                setAlbumArt(mSelectedPosition);
                 updateProgress();
 
             }
@@ -250,15 +265,15 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     public void pauseOnPlay() {
-        Log.d(TAG, "pause play method");
+        Log.d(TAG, "pause mPlay method");
         if (musicService.IS_PLAYING) {
             spinCD(false);
             musicService.pause();
-            play.setImageDrawable(getDrawable(R.drawable.play));
+            mPlay.setImageDrawable(getDrawable(R.drawable.play));
 
         } else if (!musicService.IS_PLAYING) {
             spinCD(true);
-            play.setImageDrawable(getDrawable(R.drawable.pause));
+            mPlay.setImageDrawable(getDrawable(R.drawable.pause));
             musicService.playOnPause();
            updateProgress();
         }
@@ -270,7 +285,7 @@ public class PlayerActivity extends AppCompatActivity {
     {
         if (musicService.IS_PLAYING) {
             musicService.pause();
-            play.setImageDrawable(getDrawable(R.drawable.play));}
+            mPlay.setImageDrawable(getDrawable(R.drawable.play));}
 
     }
 
@@ -280,7 +295,7 @@ public class PlayerActivity extends AppCompatActivity {
         mElapsed.setText("00:00");
         mSeekBar.setProgress(0);
         musicService.playNext();
-        play.setImageDrawable(getDrawable(R.drawable.pause));
+        mPlay.setImageDrawable(getDrawable(R.drawable.pause));
 
         if (mSelectedPosition == --mSongsListSize)
         {
@@ -303,7 +318,7 @@ public class PlayerActivity extends AppCompatActivity {
         spinCD(false);
         mSeekBar.setProgress(0);
         musicService.playPrev();
-        play.setImageDrawable(getDrawable(R.drawable.pause));
+        mPlay.setImageDrawable(getDrawable(R.drawable.pause));
         if (mSelectedPosition == 0)
         {
             mSelectedPosition = --mSongsListSize;
@@ -347,7 +362,7 @@ public class PlayerActivity extends AppCompatActivity {
     private Runnable updateElapsedTime = new Runnable() {
         @Override
         public void run() {
-            if (MusicService.IS_PLAYING)
+           // if (MusicService.IS_PLAYING)
 
             mSeekBar.setProgress(musicService.getElapsedTime()*100/musicService.getSongDuration());
             mElapsed.setText(mMsToSec(musicService.getElapsedTime()));
@@ -372,35 +387,7 @@ public class PlayerActivity extends AppCompatActivity {
 
 
 
-    NotificationCompat.Builder setNotification()
-    {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,"MUSIC", NotificationManager.IMPORTANCE_HIGH);
-            NotificationCompat.Builder notification = new NotificationCompat.Builder(this,CHANNEL_ID);
-            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.createNotificationChannel(notificationChannel);
-            return notification;
-        }
 
-//        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, "DEFAULT")
-//                .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle())
-//                .setContentText(mMusicList.get(mSelectedPosition).getTitle())
-//                .setContentTitle("Jazz Player")
-//                .setSmallIcon(R.mipmap.guitar_round);
-//
-//        Intent resultIntent = new Intent(this, PlayerActivity.class);
-//        PendingIntent resultPendingIntent =PendingIntent.getActivity(this, NOTIFICATION_ID, resultIntent,
-//                        PendingIntent.FLAG_UPDATE_CURRENT);
-//        notification.setContentIntent(resultPendingIntent);
-//        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//
-//
-//
-//        return notification.build();
-        return null;
-
-
-    }
 
     @Override
     protected void onStart() {
@@ -411,28 +398,20 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-//        LocalBroadcastManager.getInstance(this).unregisterReceiver(completionReciever);
-//        unregisterReceiver(headSet_is_plugged);
-//        Intent intent = new Intent(this,MusicService.class);
-//        startService(intent);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,"MUSIC", NotificationManager.IMPORTANCE_HIGH);
-//            NotificationCompat.Builder notification = new NotificationCompat.Builder(this,CHANNEL_ID);
-//            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//            notificationManager.createNotificationChannel(notificationChannel);
-//        musicService.startForeground(NOTIFICATION_ID, setNotification());
         mHandler.removeCallbacks(updateElapsedTime);
-        this.unbindService(mServiceConnection);
+
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.d("onStop","onstop called");
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(completionReciever);
-        if(headSet_is_plugged != null)
-        unregisterReceiver(headSet_is_plugged);
-        headSet_is_plugged = null;
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(completionReceiver);
+        if(headsetIsPlugged != null)
+        unregisterReceiver(headsetIsPlugged);
+        headsetIsPlugged = null;
+        unbindService(mServiceConnection);
 
     }
 

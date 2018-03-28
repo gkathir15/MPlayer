@@ -1,22 +1,40 @@
 package com.guru.mplayer.services;
 
-import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.media.MediaDescription;
+import android.media.MediaMetadata;
 import android.media.MediaPlayer;
+import android.media.session.MediaController;
+import android.media.session.MediaSession;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.media.MediaDescriptionCompat;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.guru.mplayer.R;
-import com.guru.mplayer.data_model.Music_Data;
+import com.guru.mplayer.activities.MainActivity;
+import com.guru.mplayer.activities.PlayerActivity;
+import com.guru.mplayer.data_model.MusicData;
 
 import java.io.IOException;
 import java.util.ArrayList;
+
+import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 
 public class MusicService extends Service implements MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnPreparedListener {
     public MusicService() {
@@ -29,7 +47,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     int resumePos;
     public int position;
     String MediaID;
-    ArrayList<Music_Data> musicList = new ArrayList<>();
+    ArrayList<MusicData> musicList = new ArrayList<>();
     public static boolean IS_PLAYING = false;
     int mCurrentDuration;
     int mSongsListSize;
@@ -37,6 +55,10 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     int id = 5;
     public static String COMPLETION_CAST = "TRACK_COMPLETED";
     int lTempPos = 0;
+    int NOTIFICATION_ID = 5;
+    String CHANNEL_ID ="MUSIC";
+
+
 
 
 
@@ -45,16 +67,15 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         Log.d(TAG, "onStartCommand");
-//        position = intent.getIntExtra("position", 0);
-//        musicList = (ArrayList<Music_Data>) intent.getSerializableExtra("songsList");
-//        mediaID = musicList.get(position).getId();
-//        mSongsListSize = musicList.size();
-//        Log.d(TAG, mediaID);
-//        initMediaPlayer();
-//
-//
- //return super.onStartCommand(intent, flags, startId);
-       return Service.START_NOT_STICKY;
+        position = intent.getIntExtra("position", 0);
+        musicList = (ArrayList<MusicData>) intent.getSerializableExtra("songsList");
+        mediaID = musicList.get(position).getId();
+        mSongsListSize = musicList.size();
+        Log.d(TAG, mediaID);
+        initMediaPlayer();
+
+      //return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
 
     }
 
@@ -62,14 +83,14 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
 
-        position = intent.getIntExtra("position", 0);
-        musicList = (ArrayList<Music_Data>) intent.getSerializableExtra("songsList");
-        mediaID = musicList.get(position).getId();
-        mSongsListSize = musicList.size();
-        Log.d(TAG, mediaID);
-        initMediaPlayer();
-        Log.d("mListSize", String.valueOf(musicList.size()));
-        Log.d("mPosition", String.valueOf(position));
+//        position = intent.getIntExtra("position", 0);
+//        musicList = (ArrayList<MusicData>) intent.getSerializableExtra("songsList");
+//        mediaID = musicList.get(position).getId();
+//        mSongsListSize = musicList.size();
+//        Log.d(TAG, mediaID);
+//        initMediaPlayer();
+//        Log.d("mListSize", String.valueOf(musicList.size()));
+//        Log.d("mPosition", String.valueOf(position));
         return iBinder;
 
     }
@@ -77,6 +98,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(TAG,"Oncreate Called");
+        mediaPlayer = new MediaPlayer();
 
 
 
@@ -101,7 +124,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     public boolean onError(MediaPlayer mp, int what, int extra) {
 
         mediaPlayer.reset();
-        Toast.makeText(getApplicationContext(),"Media player error"+what,Toast.LENGTH_LONG).show();
+       // Toast.makeText(getApplicationContext(),"Media player error"+what,Toast.LENGTH_LONG).show();
+        Log.d("MediaError","Media player error"+what);
         return false;
     }
 
@@ -143,11 +167,19 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public void initMediaPlayer() {
         Log.d(TAG, "Initmedia");
-        mediaPlayer = new MediaPlayer();
+//        if (mediaPlayer.isPlaying())
+//        {
+//            mediaPlayer.reset();
+//            mediaPlayer = null;
+//        }
+       // mediaPlayer.release();
+
+        //mediaPlayer = new MediaPlayer();
+        mediaPlayer.reset();
         mediaPlayer.setOnCompletionListener(this);
         mediaPlayer.setOnErrorListener(this);
         mediaPlayer.setOnPreparedListener(this);
-        mediaPlayer.reset();
+
         try {
 
             Log.d("MediaID to URi", mediaID);
@@ -170,7 +202,9 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
                                               }
                                           }
         );
-        //mediaPlayer.start();
+        buildNotification();
+        //initSession();
+       // buildNotification();
     }
 
     public void seekToDuration(final int duration)
@@ -318,6 +352,36 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     }
 
+    public void playAtPos(int position)
+    {
+
+
+
+        mediaID = musicList.get(position).getId();
+        mediaPlayer.reset();
+        try {
+            Log.d(TAG, mediaID);
+            mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    Long.parseLong(mediaID)));
+
+        } catch (IOException e) {
+            Log.d(TAG, "Crashed while Setting uri");
+        }
+        mediaPlayer.prepareAsync();
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+
+                mediaPlayer.start();
+
+                // mediaPlayer.start();
+                IS_PLAYING=true;
+            }
+        });
+
+    }
+
 
     public class LocalBinder extends Binder {
         public MusicService getService() {
@@ -330,6 +394,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         super.onDestroy();
         mediaPlayer.release();
         mediaPlayer = null;
+
     }
 
     public int getElapsedTime()
@@ -365,23 +430,49 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     @Override
     public boolean onUnbind(Intent intent) {
-       mediaPlayer.release();
+
 
         return super.onUnbind(intent);
     }
 
 
+    private void buildNotification() {
 
-//    private void setNotification() {
-//        NotificationCompat.Builder notificationCompat = new NotificationCompat.Builder(this, getPackageName())
-//                .setContentText("Music servioce")
-//                .setContentTitle("Music Service")
-//                .setSmallIcon(R.drawable.ic_acoustic_guitar)
-//                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-//                .setAutoCancel(true);
-//
-//
-//    }
+//        MediaSessionCompat mediaSession = new MediaSessionCompat()
+//        MediaControllerCompat mediaController = mediaSession.getController();
+//        MediaMetadataCompat mediaMetadata = mediaController.getMetadata();
+//        MediaDescriptionCompat mediaDescription = mediaMetadata.getDescription();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,0,intent,0);
+        NotificationManager notificationManager =(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,"Music",IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,CHANNEL_ID);
+
+        notificationBuilder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                //.setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
+                //.setShowActionsInCompactView(0))
+               // .setSmallIcon(R.drawable.guitarbg)
+                .setContentTitle(musicList.get(position).getAlbumName())
+                .setContentText(musicList.get(position).getTitle())
+                .setContentIntent(pendingIntent)
+                .setSmallIcon(R.drawable.guitarbg)
+                .setAutoCancel(false)
+                //.addAction(R.drawable.play,)
+
+                .build();
+
+        notificationManager.notify(NOTIFICATION_ID,notificationBuilder.build());
+
+    }
+
+
+
+
 
 
 

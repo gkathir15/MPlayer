@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.guru.mplayer.R;
-import com.guru.mplayer.data_model.Music_Data;
+import com.guru.mplayer.data_model.MusicData;
 import com.guru.mplayer.interfaces.OnItemClickListener;
 import com.squareup.picasso.Picasso;
 
@@ -24,13 +24,13 @@ import java.util.ArrayList;
 
 public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> {
 
-    private ArrayList<Music_Data> music_Data_List;
+    private ArrayList<MusicData> music_Data_List;
     private int itemList;
     private OnItemClickListener clickListener;
     Context mContext;
 
 
-    public SongListAdapter(int list_item, ArrayList<Music_Data> songsList) {
+    public SongListAdapter(int list_item, ArrayList<MusicData> songsList) {
 
 
         itemList = list_item;
@@ -56,7 +56,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
     public void onBindViewHolder(SongListAdapter.ViewHolder holder, int position) {
 
 
-        Music_Data music_data = music_Data_List.get(position);
+        MusicData music_data = music_Data_List.get(position);
         TextView mTitle = holder.title;
         TextView mAlbum = holder.album;
         ImageView lThumbArt = holder.lThumbsArt;
@@ -116,6 +116,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
         @Override
         public void onClick(View v) {
+
             clickListener.onClick(v, getAdapterPosition());
         }
     }

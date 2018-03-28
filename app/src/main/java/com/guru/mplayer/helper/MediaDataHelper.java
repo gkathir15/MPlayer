@@ -5,7 +5,7 @@ import android.database.Cursor;
 import android.provider.MediaStore;
 import android.util.Log;
 
-import com.guru.mplayer.data_model.Music_Data;
+import com.guru.mplayer.data_model.MusicData;
 
 import java.util.ArrayList;
 
@@ -18,7 +18,7 @@ public class MediaDataHelper {
     Cursor mCursor, mAlbumCursor;
 
 
-    public ArrayList<Music_Data> queryMediaMeta(Context context) {
+    public ArrayList<MusicData> queryMediaMeta(Context context) {
         mCursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, new String[]{
                 MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.TITLE,
@@ -28,7 +28,7 @@ public class MediaDataHelper {
         }, null, null, MediaStore.Audio.Media.ALBUM+" ASC" );
 
 
-        ArrayList<Music_Data> TracksList = new ArrayList<>();
+        ArrayList<MusicData> TracksList = new ArrayList<>();
         Log.d("track list Size", String.valueOf(TracksList.size()));
 
         try {
@@ -37,11 +37,11 @@ public class MediaDataHelper {
                 Log.d("cursorfirst", "moveto first");
 
 
-                // public Music_Data(String id,int length, String title, String albumName, String albumArt)
+                // public MusicData(String id,int length, String title, String albumName, String albumArt)
                 do {
 
 
-                    Music_Data music_data = new Music_Data(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media._ID))
+                    MusicData music_data = new MusicData(mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media._ID))
                             , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.TITLE))
                             , mCursor.getInt(mCursor.getColumnIndex(MediaStore.Audio.Media.DURATION))
                             , mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM))

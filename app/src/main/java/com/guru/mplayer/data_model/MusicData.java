@@ -8,18 +8,18 @@ import java.io.Serializable;
  * Created by Guru on 09-03-2018.
  */
 
-public class Music_Data implements Serializable {
+public class MusicData implements Serializable {
 
     private String Id,Title,AlbumName,AlbumID;
     int Length;
     String TrackUri;
 
-    public Music_Data() {
+    public MusicData() {
 
     }
 
 
-    public Music_Data(String id, String title,int length, String albumName,String albumID) {
+    public MusicData(String id, String title, int length, String albumName, String albumID) {
         Id = id;
         Title = title;
         AlbumName = albumName;
@@ -43,7 +43,7 @@ public class Music_Data implements Serializable {
         TrackUri = trackUri;
     }
 
-//    public Music_Data(String string, String mCursorString, int anInt, String albumArt, String s) {
+//    public MusicData(String string, String mCursorString, int anInt, String albumArt, String s) {
 //
 //    }
 
