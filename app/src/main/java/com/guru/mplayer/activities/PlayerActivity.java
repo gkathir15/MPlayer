@@ -99,7 +99,11 @@ public class PlayerActivity extends AppCompatActivity {
         playIntent = new Intent(getApplicationContext(), MusicService.class);
         playIntent.putExtra("songsList", mMusicList);
         playIntent.putExtra("position", mSelectedPosition);
-        startService(playIntent);
+       // startService(playIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(playIntent);
+        }
+
         if(!isBound)
         {
             Log.d("PlayerActivity","is not bound,binding Service");
@@ -412,6 +416,10 @@ public class PlayerActivity extends AppCompatActivity {
         unregisterReceiver(headsetIsPlugged);
         headsetIsPlugged = null;
         unbindService(mServiceConnection);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            startForegroundService(playIntent);
+//        }
+
 
     }
 

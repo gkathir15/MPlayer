@@ -7,34 +7,28 @@ import android.app.Service;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaDescription;
-import android.media.MediaMetadata;
 import android.media.MediaPlayer;
-import android.media.session.MediaController;
-import android.media.session.MediaSession;
+import android.media.session.MediaSessionManager;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.guru.mplayer.R;
 import com.guru.mplayer.activities.MainActivity;
-import com.guru.mplayer.activities.PlayerActivity;
 import com.guru.mplayer.data_model.MusicData;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
+
 
 public class MusicService extends Service implements MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnPreparedListener {
     public MusicService() {
@@ -57,6 +51,14 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     int lTempPos = 0;
     int NOTIFICATION_ID = 5;
     String CHANNEL_ID ="MUSIC";
+    private MediaSessionCompat mMediaSessionCompat;
+    private PlaybackStateCompat.Builder mPlaybackStateCompat;
+    private MediaSessionManager mMediaSessionManager;
+    private  MediaControllerCompat mediaController;
+    private  MediaDescriptionCompat mediaDescription;
+    private  MediaMetadataCompat mediaMetadata;
+
+
 
 
 
@@ -100,6 +102,35 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         super.onCreate();
         Log.d(TAG,"Oncreate Called");
         mediaPlayer = new MediaPlayer();
+//        mMediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
+//        mMediaSessionCompat = new MediaSessionCompat(this,TAG);
+//        mediaController = mMediaSessionCompat.getController();
+//        mediaMetadata = mediaController.getMetadata();
+//        mediaDescription = mediaMetadata.getDescription();
+//        //setSessionToken(mMediaSessionCompat.getMediaSession(),mMediaSessionCompat.getSessionToken());
+//        mMediaSessionCompat.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS|MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+//        mPlaybackStateCompat = new PlaybackStateCompat.Builder()
+//                                .setActions(PlaybackStateCompat.ACTION_PAUSE|PlaybackStateCompat.ACTION_PLAY);
+//        mMediaSessionCompat.setPlaybackState(mPlaybackStateCompat.build());
+//
+//
+//        mMediaSessionCompat.setCallback(new MediaSessionCompat.Callback() {
+//            @Override
+//            public void onPlay() {
+//                super.onPlay();
+//                playOnPause();
+//            }
+//
+//            @Override
+//            public void onPause() {
+//                super.onPause();
+//                pause();
+//            }
+//
+//        });
+
+
+
 
 
 
@@ -198,11 +229,12 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
                                                  // mp.start();
                                                   mediaPlayer.start();
                                                   IS_PLAYING =true;
+                                                  buildNotification();
 
                                               }
                                           }
         );
-        buildNotification();
+
         //initSession();
        // buildNotification();
     }
@@ -438,10 +470,9 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     private void buildNotification() {
 
-//        MediaSessionCompat mediaSession = new MediaSessionCompat()
-//        MediaControllerCompat mediaController = mediaSession.getController();
-//        MediaMetadataCompat mediaMetadata = mediaController.getMetadata();
-//        MediaDescriptionCompat mediaDescription = mediaMetadata.getDescription();
+
+
+
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,0,intent,0);
@@ -454,19 +485,25 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,CHANNEL_ID);
 
         notificationBuilder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                //.setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
-                //.setShowActionsInCompactView(0))
-               // .setSmallIcon(R.drawable.guitarbg)
+//                .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
+//                        .setMediaSession(mMediaSessionCompat.getSessionToken())
+//                .setShowActionsInCompactView(0))
+//                .setLargeIcon(mediaMetadata.getBitmap(TAG))
+//                .setContentTitle(mediaDescription.getTitle())
+//                .setContentText(mediaDescription.getTitle())
                 .setContentTitle(musicList.get(position).getAlbumName())
                 .setContentText(musicList.get(position).getTitle())
                 .setContentIntent(pendingIntent)
                 .setSmallIcon(R.drawable.guitarbg)
                 .setAutoCancel(false)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+              // .addAction(R.drawable.play,"play", MediaButtonReceiver.buildMediaButtonPendingIntent(this,))
                 //.addAction(R.drawable.play,)
 
                 .build();
 
-        notificationManager.notify(NOTIFICATION_ID,notificationBuilder.build());
+        //notificationManager.notify(NOTIFICATION_ID,notificationBuilder.build());
+        startForeground(id,notificationBuilder.build());
 
     }
 
