@@ -1,7 +1,5 @@
 package com.guru.mplayer.activities;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentUris;
@@ -14,7 +12,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PersistableBundle;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -38,16 +35,16 @@ public class PlayerActivity extends AppCompatActivity {
 
     ArrayList<MusicData> mMusicList = new ArrayList();
     int mSelectedPosition;
-    String TAG = "player";
-    int NOTIFICATION_ID = 5;
-    String CHANNEL_ID = "5";
+    static String TAG = "player";
+    int notificationID = 5;
+    String channelID = "5";
     TextView mTitle, mAlbum, mElapsed, mDuration;
     ImageView mCd, mPrev, mPlay, mNext;
     SeekBar mSeekBar;
     Animation rotation;
     boolean isBound = false;
     MusicService musicService;
-    Intent playIntent;
+    Intent playerIntent;
     Handler mHandler;
     int mSongsListSize;
     private HeadSetIsPlugged headsetIsPlugged;
@@ -96,19 +93,19 @@ public class PlayerActivity extends AppCompatActivity {
         setAlbumArt(mSelectedPosition);
 
         //spinCD(true);
-        playIntent = new Intent(getApplicationContext(), MusicService.class);
-        playIntent.putExtra("songsList", mMusicList);
-        playIntent.putExtra("position", mSelectedPosition);
-       // startService(playIntent);
+        playerIntent = new Intent(getApplicationContext(), MusicService.class);
+        playerIntent.putExtra("songsList", mMusicList);
+        playerIntent.putExtra("position", mSelectedPosition);
+       // startService(playerIntent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(playIntent);
+            startForegroundService(playerIntent);
         }
 
         if(!isBound)
         {
             Log.d("PlayerActivity","is not bound,binding Service");
 
-            bindService(playIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+            bindService(playerIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
             updateProgress();
 
         }
@@ -349,7 +346,7 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-       // musicService.startForeground(NOTIFICATION_ID,setNotification());
+       // musicService.startForeground(notificationID,setNotification());
        // musicService.onDestroy();
         //finish();
 
@@ -366,14 +363,11 @@ public class PlayerActivity extends AppCompatActivity {
     private Runnable updateElapsedTime = new Runnable() {
         @Override
         public void run() {
-           // if (MusicService.IS_PLAYING)
-
             mSeekBar.setProgress(musicService.getElapsedTime()*100/musicService.getSongDuration());
             mElapsed.setText(mMsToSec(musicService.getElapsedTime()));
             Log.d("updation", String.valueOf(musicService.getElapsedTime()*100/musicService.getSongDuration()));
             Log.d("vals"," elap "+String.valueOf(musicService.getElapsedTime()+" dur "+musicService.getSongDuration()));
             mHandler.postDelayed(this, 100);
-
         }
     };
 
@@ -418,10 +412,10 @@ public class PlayerActivity extends AppCompatActivity {
         unbindService(mServiceConnection);
         if(!musicService.isIsPlaying())
         {
-            stopService(playIntent);
+            stopService(playerIntent);
         }
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            startForegroundService(playIntent);
+//            startForegroundService(playerIntent);
 //        }
 
 

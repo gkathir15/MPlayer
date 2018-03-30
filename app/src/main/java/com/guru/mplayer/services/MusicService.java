@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.media.session.MediaSessionManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -23,6 +24,7 @@ import android.util.Log;
 import com.guru.mplayer.R;
 import com.guru.mplayer.activities.MainActivity;
 import com.guru.mplayer.data_model.MusicData;
+import com.guru.mplayer.helper.CommonHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,6 +60,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     private  MediaDescriptionCompat mediaDescription;
     private  MediaMetadataCompat mediaMetadata;
     NotificationManager notificationManager;
+    CommonHelper commonHelper = new CommonHelper();
 
 
 
@@ -71,11 +74,15 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
         Log.d(TAG, "onStartCommand");
         position = intent.getIntExtra("position", 0);
+        position = intent.getIntExtra("position", 0);
         musicList = (ArrayList<MusicData>) intent.getSerializableExtra("songsList");
         mediaID = musicList.get(position).getId();
         mSongsListSize = musicList.size();
         Log.d(TAG, mediaID);
+        if (!mediaPlayer.isPlaying())
         initMediaPlayer();
+        else
+            playAtPos(position);
 
       //return super.onStartCommand(intent, flags, startId);
         return START_STICKY;
@@ -148,6 +155,11 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         intent.putExtra("status","playing next");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         Log.d("completed","Broadcast fired");
+//        commonHelper.notificationBuilder.setContentTitle(musicList.get(position).getAlbumName());
+//        commonHelper.notificationBuilder.setContentText(musicList.get(position).getTitle());
+//        notificationManager.notify();
+
+
 
     }
 
@@ -242,40 +254,6 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public void seekToDuration(final int duration)
     {
-
-//        mediaPlayer.reset();
-//        try {
-//            Log.d(TAG, mediaID);
-//            mediaPlayer.setDataSource(getApplicationContext(), ContentUris.withAppendedId(
-//                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-//                    Long.parseLong(mediaID)));
-//
-//        } catch (IOException e) {
-//            Log.d(TAG, "Crashed while Setting uri");
-//        }
-//
-//
-//
-//        mediaPlayer.prepareAsync();
-//        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-//            @Override
-//            public void onPrepared(MediaPlayer mp) {
-//                mediaPlayer.seekTo(duration);
-//
-//
-//                Log.d("seekduration", String.valueOf(duration));
-////                mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
-////                    @Override
-////                    public void onSeekComplete(MediaPlayer mp) {
-////                        mediaPlayer.start();
-////                    }
-////                });
-//                mediaPlayer.start();
-//
-//                // mediaPlayer.start();
-//                IS_PLAYING=true;
-//            }
-//        });
         mediaPlayer.seekTo(duration);
         IS_PLAYING=true;
 
@@ -478,41 +456,44 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
 
     private void buildNotification() {
-
-
-
-
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,0,intent,0);
         notificationManager =(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,"Music",IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(notificationChannel);
         }
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,CHANNEL_ID);
 
-        notificationBuilder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-//                .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
-//                        .setMediaSession(mMediaSessionCompat.getSessionToken())
-//                .setShowActionsInCompactView(0))
-//                .setLargeIcon(mediaMetadata.getBitmap(TAG))
-//                .setContentTitle(mediaDescription.getTitle())
-//                .setContentText(mediaDescription.getTitle())
-                .setContentTitle(musicList.get(position).getAlbumName())
-                .setContentText(musicList.get(position).getTitle())
-                .setContentIntent(pendingIntent)
-                .setSmallIcon(R.drawable.guitarbg)
-                .setAutoCancel(false)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-              // .addAction(R.drawable.play,"play", MediaButtonReceiver.buildMediaButtonPendingIntent(this,))
-                //.addAction(R.drawable.play,)
+//        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,CHANNEL_ID);
+//
+//        notificationBuilder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+////                .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
+////                .setMediaSession(mMediaSessionCompat.getSessionToken())
+////                .setShowActionsInCompactView(0))
+////                .setLargeIcon(mediaMetadata.getBitmap(TAG))
+////                .setContentTitle(mediaDescription.getTitle())
+////                .setContentText(mediaDescription.getTitle())
+//                .setContentTitle(musicList.get(position).getAlbumName())
+//                .setContentText(musicList.get(position).getTitle())
+//                .setContentIntent(pendingIntent)
+//                .setSmallIcon(R.drawable.guitarbg)
+//                .setAutoCancel(false)
+//                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+//              // .addAction(R.drawable.play,"play", MediaButtonReceiver.buildMediaButtonPendingIntent(this,))
+//                //.addAction(R.drawable.play,)
+//
+//                .build();
 
-                .build();
 
-        //notificationManager.notify(NOTIFICATION_ID,notificationBuilder.build());
-        startForeground(id,notificationBuilder.build());
+//     // notificationManager.notify(NOTIFICATION_ID,notificationBuilder.build());
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            startForegroundService(intent);
+//            notificationManager.notify(id,commonHelper.setNotification(CHANNEL_ID,musicList.get(position).getAlbumName(),musicList.get(position).getTitle(),this,pendingIntent));
+//        }
+//        else
+        startForeground(id,commonHelper.setNotification(CHANNEL_ID,musicList.get(position).getAlbumName(),musicList.get(position).getTitle(),this,pendingIntent));
 
     }
 

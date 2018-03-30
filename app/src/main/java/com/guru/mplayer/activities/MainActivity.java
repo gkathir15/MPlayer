@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_PERMISSION);
                 return false;
             }
-        } else { //permission for lower API devices,granted from manifest
+        } else {
             Log.d(TAG, "Permission is granted Lower API");
             return true;
         }

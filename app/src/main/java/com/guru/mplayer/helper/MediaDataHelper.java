@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class MediaDataHelper {
 
-    Cursor mCursor, mAlbumCursor;
+    Cursor mCursor;
 
 
     public ArrayList<MusicData> queryMediaMeta(Context context) {
@@ -37,7 +37,7 @@ public class MediaDataHelper {
                 Log.d("cursorfirst", "moveto first");
 
 
-                // public MusicData(String id,int length, String title, String albumName, String albumArt)
+                //constructor signature public MusicData(String id,int length, String title, String albumName, String albumArt)
                 do {
 
 
