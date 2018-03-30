@@ -416,6 +416,10 @@ public class PlayerActivity extends AppCompatActivity {
         unregisterReceiver(headsetIsPlugged);
         headsetIsPlugged = null;
         unbindService(mServiceConnection);
+        if(!musicService.isIsPlaying())
+        {
+            stopService(playIntent);
+        }
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 //            startForegroundService(playIntent);
 //        }

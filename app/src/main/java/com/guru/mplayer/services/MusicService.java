@@ -57,6 +57,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     private  MediaControllerCompat mediaController;
     private  MediaDescriptionCompat mediaDescription;
     private  MediaMetadataCompat mediaMetadata;
+    NotificationManager notificationManager;
 
 
 
@@ -426,6 +427,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         super.onDestroy();
         mediaPlayer.release();
         mediaPlayer = null;
+        notificationManager.cancelAll();
 
     }
 
@@ -454,6 +456,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
 
 
+
+
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
@@ -467,6 +471,11 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         return super.onUnbind(intent);
     }
 
+    public boolean isIsPlaying()
+    {
+        return mediaPlayer.isPlaying();
+    }
+
 
     private void buildNotification() {
 
@@ -476,7 +485,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,0,intent,0);
-        NotificationManager notificationManager =(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager =(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,"Music",IMPORTANCE_DEFAULT);
