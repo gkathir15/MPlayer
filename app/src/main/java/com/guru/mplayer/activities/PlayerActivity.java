@@ -99,6 +99,9 @@ public class PlayerActivity extends AppCompatActivity {
        // startService(playerIntent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(playerIntent);
+        }else
+        {
+            startService(playerIntent);
         }
 
         if(!isBound)
@@ -365,8 +368,8 @@ public class PlayerActivity extends AppCompatActivity {
         public void run() {
             mSeekBar.setProgress(musicService.getElapsedTime()*100/musicService.getSongDuration());
             mElapsed.setText(mMsToSec(musicService.getElapsedTime()));
-            Log.d("updation", String.valueOf(musicService.getElapsedTime()*100/musicService.getSongDuration()));
-            Log.d("vals"," elap "+String.valueOf(musicService.getElapsedTime()+" dur "+musicService.getSongDuration()));
+           // Log.d("updation", String.valueOf(musicService.getElapsedTime()*100/musicService.getSongDuration()));
+           // Log.d("vals"," elap "+String.valueOf(musicService.getElapsedTime()+" dur "+musicService.getSongDuration()));
             mHandler.postDelayed(this, 100);
         }
     };

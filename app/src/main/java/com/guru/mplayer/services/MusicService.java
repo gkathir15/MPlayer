@@ -79,6 +79,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         mediaID = musicList.get(position).getId();
         mSongsListSize = musicList.size();
         Log.d(TAG, mediaID);
+        Log.d(TAG, String.valueOf(mSongsListSize));
         if (!mediaPlayer.isPlaying())
         initMediaPlayer();
         else
