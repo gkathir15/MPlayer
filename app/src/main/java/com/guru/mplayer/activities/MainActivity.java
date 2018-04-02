@@ -51,8 +51,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         linearLayout = findViewById(R.id.rootview);
 
 
-//        isReadStoragePermissionGranted();
-//        queryMusicData.execute();
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
         {
             Log.d(TAG,"Permission not present");
@@ -147,8 +146,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
 
 
-            // Permission is not granted
-            // Should we show an explanation?
+
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
@@ -156,18 +154,18 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
 
 
-              // showSnackBar();
+
 
 
 
             } else {
 
-                // No explanation needed; request the permission
+
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_PERMISSION_CODE);
 
 
-                
+
             }
         } else
             {
@@ -175,22 +173,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
             queryMusicData.execute();
         }
 
-        //        if (Build.VERSION.SDK_INT >= 23) {
-//            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-//                    == PackageManager.PERMISSION_GRANTED) {
-//                Log.d(TAG, "Permission is already present");
-//                return true;
-//            } else {
-//
-//                Log.d(TAG, "Permission is Denied");
-//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_PERMISSION_CODE);
-//                return false;
-//            }
-//        } else {
-//            Log.d(TAG, "Permission is granted Lower API");
-//            return true;
-//        }
-//    }
+
 
 
     }

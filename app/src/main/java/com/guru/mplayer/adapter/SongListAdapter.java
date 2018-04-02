@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHolder> {
 
-    private ArrayList<MusicData> music_Data_List;
+    private ArrayList<MusicData> musicDataList;
     private int itemList;
     private OnItemClickListener clickListener;
     Context mContext;
@@ -34,7 +34,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
 
         itemList = list_item;
-        music_Data_List = songsList;
+        musicDataList = songsList;
 
 
     }
@@ -56,24 +56,24 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
     public void onBindViewHolder(SongListAdapter.ViewHolder holder, int position) {
 
 
-        MusicData music_data = music_Data_List.get(position);
+        MusicData music_data = musicDataList.get(position);
         TextView mTitle = holder.title;
         TextView mAlbum = holder.album;
         ImageView lThumbArt = holder.lThumbsArt;
         mTitle.setText(music_data.getTitle());
         mAlbum.setText(music_data.getAlbumName());
 //        Uri uri =ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"),
-//                Long.parseLong(music_Data_List.get(position).getAlbumID()));
-       // Uri uri = Uri.parse("content://media/external/audio/albumart"+music_Data_List.get(position).getAlbumID());
+//                Long.parseLong(musicDataList.get(position).getAlbumID()));
+       // Uri uri = Uri.parse("content://media/external/audio/albumart"+musicDataList.get(position).getAlbumID());
 
-        Log.d("Via uriParse","content://media/external/audio/albumart/"+music_Data_List.get(position).getAlbumID());
+        Log.d("Via uriParse","content://media/external/audio/albumart/"+ musicDataList.get(position).getAlbumID());
         Log.d("Via WithAppendedID",
                 String.valueOf(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"),
-                        Long.parseLong(music_Data_List.get(position).getAlbumID()))));
+                        Long.parseLong(musicDataList.get(position).getAlbumID()))));
 
-        Log.d("albumID",""+music_Data_List.get(position).getAlbumID());
-        //Picasso.get().load(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"),Long.parseLong(music_Data_List.get(position).getAlbumID())))
-        Picasso.get().load(Uri.parse("content://media/external/audio/albumart/"+music_Data_List.get(position).getAlbumID()))
+        Log.d("albumID",""+ musicDataList.get(position).getAlbumID());
+        //Picasso.get().load(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"),Long.parseLong(musicDataList.get(position).getAlbumID())))
+        Picasso.get().load(Uri.parse("content://media/external/audio/albumart/"+ musicDataList.get(position).getAlbumID()))
         .placeholder(R.drawable.ic_vinyl)
                 .error(R.drawable.ic_vinyl)
                 .into(lThumbArt);
@@ -90,8 +90,8 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        // Log.d("adapter", String.valueOf(music_Data_List.size()));
-        return music_Data_List.size();
+        // Log.d("adapter", String.valueOf(musicDataList.size()));
+        return musicDataList.size();
 
     }
 

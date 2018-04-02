@@ -266,7 +266,7 @@ public class PlayerActivity extends AppCompatActivity {
         //calculatedDuration = mins + ":" + sec;
 //        Log.d(TAG, calculatedDuration);
         String lCalcTime = String.format("%02d:%02d", mins, sec);
-        Log.d(TAG, lCalcTime);
+       // Log.d(TAG, lCalcTime);
         return lCalcTime;
 
     }
@@ -303,14 +303,16 @@ public class PlayerActivity extends AppCompatActivity {
         mSeekBar.setProgress(0);
         musicService.playNext();
         mPlay.setImageDrawable(getDrawable(R.drawable.pause));
+        int temp = mMusicList.size();
 
-        if (mSelectedPosition == --mSongsListSize)
+        if (mSelectedPosition == temp-1)
         {
             mSelectedPosition = 0;
         }
         else {
-            mSelectedPosition = ++mSelectedPosition;
+            ++mSelectedPosition;
         }
+        Log.d(TAG+"next", String.valueOf(mSelectedPosition));
 
         setMetaDataOnUI();
         setAlbumArt(mSelectedPosition);
@@ -380,8 +382,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     public void setAlbumArt(int pos) {
 
-        Picasso.get().load(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"),
-                Long.parseLong(mMusicList.get(pos).getAlbumID())))
+        Picasso.get().load(Uri.parse("content://media/external/audio/albumart/"+ mMusicList.get(pos).getAlbumID()))
                 .placeholder(R.drawable.ic_vinyl)
                 .error(R.mipmap.dummy)
                 .into(mCd);
@@ -427,15 +428,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     }
 
-//    @Override
-//    public void onCompletion(MediaPlayer mp) {
-//
-//        setMetaDataOnUI();
-//        setAlbumArt(musicService.position);
-//
-//
-//
-//    }
+
 
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
