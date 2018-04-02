@@ -138,6 +138,8 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
     public void isReadStoragePermissionGranted() {
 
+        String []perms ={Manifest.permission.READ_EXTERNAL_STORAGE};
+
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -150,13 +152,13 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
+                ActivityCompat.requestPermissions(this,perms,READ_PERMISSION_CODE);
 
-               showSnackBar();
 
 
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
+              // showSnackBar();
+
+
 
             } else {
 
@@ -165,9 +167,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_PERMISSION_CODE);
 
 
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
+                
             }
         } else
             {
@@ -200,15 +200,18 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
        // isReadStoragePermissionGranted();
-        if (grantResults.length > 0 && grantResults[0]!=READ_PERMISSION_CODE)
+        if (grantResults.length > 0 && grantResults[0]==PackageManager.PERMISSION_GRANTED)
         {
-            showSnackBar();
+           // showSnackBar();
+            Log.d(TAG,"on Request permission");
+            queryMusicData.execute();
 
         }
         else
         {
 
-            queryMusicData.execute();
+           // queryMusicData.execute();
+            showSnackBar();
         }
 
 

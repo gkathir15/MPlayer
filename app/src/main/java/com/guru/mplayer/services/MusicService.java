@@ -7,6 +7,8 @@ import android.app.Service;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.media.session.MediaSessionManager;
 import android.os.Binder;
@@ -60,7 +62,11 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     private  MediaDescriptionCompat mediaDescription;
     private  MediaMetadataCompat mediaMetadata;
     NotificationManager notificationManager;
+    PendingIntent notificationPendingIntent;
+    Intent notifyIntent;
     CommonHelper commonHelper = new CommonHelper();
+    Bitmap albumArt = BitmapFactory.decodeResource(null,R.mipmap.dummy);
+
 
 
 
@@ -158,7 +164,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         Log.d("completed","Broadcast fired");
 //        commonHelper.notificationBuilder.setContentTitle(musicList.get(position).getAlbumName());
 //        commonHelper.notificationBuilder.setContentText(musicList.get(position).getTitle());
-//        notificationManager.notify();
+        updateNotification();
+
 
 
 
@@ -250,7 +257,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         );
 
         //initSession();
-       // buildNotification();
+//       updateNotification();
     }
 
     public void seekToDuration(final int duration)
@@ -322,6 +329,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
             }
         });
 
+        updateNotification();
+
     }
 
     public void playPrev()
@@ -362,6 +371,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
             }
         });
 
+        updateNotification();
+
     }
 
     public void playAtPos(int position)
@@ -391,6 +402,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
                 IS_PLAYING=true;
             }
         });
+
+        updateNotification();
 
     }
 
@@ -457,9 +470,9 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
 
     private void buildNotification() {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this,0,intent,0);
+        notifyIntent = new Intent(this, MainActivity.class);
+        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        notificationPendingIntent = PendingIntent.getActivity(this,0,notifyIntent,0);
         notificationManager =(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -478,7 +491,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 ////                .setContentText(mediaDescription.getTitle())
 //                .setContentTitle(musicList.get(position).getAlbumName())
 //                .setContentText(musicList.get(position).getTitle())
-//                .setContentIntent(pendingIntent)
+//                .setContentIntent(NotificationPendingIntent)
 //                .setSmallIcon(R.drawable.guitarbg)
 //                .setAutoCancel(false)
 //                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -490,12 +503,21 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
 //     // notificationManager.notify(NOTIFICATION_ID,notificationBuilder.build());
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            startForegroundService(intent);
-//            notificationManager.notify(id,commonHelper.setNotification(CHANNEL_ID,musicList.get(position).getAlbumName(),musicList.get(position).getTitle(),this,pendingIntent));
+//            startForegroundService(notifyIntent);
+//            notificationManager.notify(id,commonHelper.setNotification(CHANNEL_ID,musicList.get(position).getAlbumName(),musicList.get(position).getTitle(),this,NotificationPendingIntent));
 //        }
 //        else
-        startForeground(id,commonHelper.setNotification(CHANNEL_ID,musicList.get(position).getAlbumName(),musicList.get(position).getTitle(),this,pendingIntent));
+        startForeground(id,commonHelper.setNotification(CHANNEL_ID,musicList.get(position).getAlbumName(),musicList.get(position).getTitle(),this,notificationPendingIntent,albumArt));
+        //notificationManager.notify(id,);
 
+    }
+
+    private void updateNotification()
+    {
+        notificationManager.notify(id,commonHelper.setNotification(CHANNEL_ID,
+                musicList.get(position).getAlbumName(),
+                musicList.get(position).getTitle(),
+                this,notificationPendingIntent,albumArt));
     }
 
 

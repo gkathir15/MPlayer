@@ -59,7 +59,7 @@ public class PlayerActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             isBound = false;
-            musicService.playAtPos(mSelectedPosition);
+            //musicService.playAtPos(mSelectedPosition);
         }
     };
 
@@ -118,6 +118,9 @@ public class PlayerActivity extends AppCompatActivity {
                 Log.d("playerActivity","Service is bound");
 
             }
+
+            Log.d(TAG+" position", String.valueOf(mSelectedPosition));
+            Log.d(TAG+" size of list", String.valueOf(mMusicList.size()));
 
 
 
